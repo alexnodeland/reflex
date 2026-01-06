@@ -1,31 +1,42 @@
 """Decision context for working memory during decision-making."""
 
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import UTC, datetime, timedelta
+from typing import Any, TypeAlias
 
 from pydantic import BaseModel, Field
 
-from reflex.events import Event
+from reflex.events import Event, FileEvent, HTTPEvent, TimerEvent, WebSocketEvent
+
+# Type alias for the event union
+EventType: TypeAlias = WebSocketEvent | HTTPEvent | FileEvent | TimerEvent
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+def _empty_event_list() -> list[EventType]:
+    return []
 
 
 class DecisionContext(BaseModel):
     """Working memory that accumulates events between actions."""
 
     scope: str
-    events: list[Event] = Field(default_factory=list)
+    events: list[EventType] = Field(default_factory=_empty_event_list)
     scratch: dict[str, Any] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
 
     def add(self, event: Event) -> None:
         """Add an event to the context."""
         self.events.append(event)
 
-    def window(self, seconds: float) -> list[Event]:
+    def window(self, seconds: float) -> list[EventType]:
         """Get events within a time window from now."""
-        cutoff = datetime.utcnow() - timedelta(seconds=seconds)
+        cutoff = _utc_now() - timedelta(seconds=seconds)
         return [e for e in self.events if e.timestamp >= cutoff]
 
-    def of_type(self, *types: str) -> list[Event]:
+    def of_type(self, *types: str) -> list[EventType]:
         """Get events of specific types."""
         return [e for e in self.events if e.type in types]
 

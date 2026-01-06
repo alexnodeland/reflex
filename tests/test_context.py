@@ -1,7 +1,7 @@
 """Tests for DecisionContext."""
 
 import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from reflex.context import DecisionContext
 from reflex.events import HTTPEvent, TimerEvent, WebSocketEvent
@@ -47,7 +47,7 @@ class TestDecisionContext:
 
         # Add old event
         old_event = WebSocketEvent(source="test", connection_id="c1", content="old")
-        old_event.timestamp = datetime.utcnow() - timedelta(seconds=10)
+        old_event.timestamp = datetime.now(UTC) - timedelta(seconds=10)
         ctx.add(old_event)
 
         # Add recent event
@@ -66,7 +66,7 @@ class TestDecisionContext:
 
         # Add old event
         old_event = WebSocketEvent(source="test", connection_id="c1", content="old")
-        old_event.timestamp = datetime.utcnow() - timedelta(seconds=60)
+        old_event.timestamp = datetime.now(UTC) - timedelta(seconds=60)
         ctx.add(old_event)
 
         # Get events from last 5 seconds

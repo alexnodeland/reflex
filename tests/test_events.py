@@ -1,6 +1,6 @@
 """Tests for event types and discriminated unions."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import TypeAdapter, ValidationError
@@ -62,9 +62,9 @@ class TestBaseEvent:
         class TestEvent(BaseEvent):
             type: str = "test"
 
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         event = TestEvent(source="test")
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
         assert before <= event.timestamp <= after
 
     def test_default_meta(self) -> None:

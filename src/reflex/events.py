@@ -1,10 +1,14 @@
 """Event types with discriminated unions for efficient validation."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 class EventMeta(BaseModel):
@@ -19,7 +23,7 @@ class BaseEvent(BaseModel):
     """Common fields for all events."""
 
     id: str = Field(default_factory=lambda: str(uuid4()))
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=_utc_now)
     source: str
     meta: EventMeta = Field(default_factory=EventMeta)
 

@@ -8,7 +8,7 @@ from typing import Protocol
 from pydantic import TypeAdapter
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import Field as SQLField
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from reflex.events import Event
@@ -107,12 +107,12 @@ class SQLiteEventStore:
             async with self.session_factory() as session:
                 query = (
                     select(EventRecord)
-                    .where(EventRecord.status == "pending")
-                    .order_by(EventRecord.timestamp)
+                    .where(col(EventRecord.status) == "pending")
+                    .order_by(col(EventRecord.timestamp))
                     .limit(100)
                 )
                 if event_types:
-                    query = query.where(EventRecord.type.in_(event_types))
+                    query = query.where(col(EventRecord.type).in_(event_types))
 
                 result = await session.exec(query)
                 records = list(result.all())
@@ -163,15 +163,15 @@ class SQLiteEventStore:
     ) -> AsyncIterator[Event]:
         """Replay historical events for debugging."""
         async with self.session_factory() as session:
-            query = select(EventRecord).where(EventRecord.timestamp >= start)
+            query = select(EventRecord).where(col(EventRecord.timestamp) >= start)
 
             if end is not None:
-                query = query.where(EventRecord.timestamp <= end)
+                query = query.where(col(EventRecord.timestamp) <= end)
 
             if event_types:
-                query = query.where(EventRecord.type.in_(event_types))
+                query = query.where(col(EventRecord.type).in_(event_types))
 
-            query = query.order_by(EventRecord.timestamp)
+            query = query.order_by(col(EventRecord.timestamp))
 
             result = await session.exec(query)
             for record in result.all():
@@ -182,8 +182,8 @@ class SQLiteEventStore:
         async with self.session_factory() as session:
             query = (
                 select(EventRecord)
-                .where(EventRecord.status == "dlq")
-                .order_by(EventRecord.timestamp)
+                .where(col(EventRecord.status) == "dlq")
+                .order_by(col(EventRecord.timestamp))
             )
 
             result = await session.exec(query)
