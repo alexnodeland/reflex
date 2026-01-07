@@ -6,9 +6,16 @@ import pytest
 class TestSettings:
     """Tests for the Settings class."""
 
-    def test_default_values(self) -> None:
+    def test_default_values(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that default values are set correctly."""
         from reflex.config import Settings
+
+        # Clear environment variables that might override defaults
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        monkeypatch.delenv("DATABASE_POOL_SIZE", raising=False)
+        monkeypatch.delenv("API_PORT", raising=False)
+        monkeypatch.delenv("LOG_LEVEL", raising=False)
 
         # Create fresh settings instance to test defaults
         settings = Settings()
