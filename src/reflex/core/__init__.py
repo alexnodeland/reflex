@@ -6,10 +6,12 @@ from reflex.core.events import (
     BaseEvent,
     Event,
     EventMeta,
+    EventRegistry,
     HTTPEvent,
     LifecycleEvent,
     TimerEvent,
     WebSocketEvent,
+    get_event_union,
 )
 
 __all__ = [
@@ -18,9 +20,11 @@ __all__ = [
     "DecisionContext",
     "Event",
     "EventMeta",
+    "EventRegistry",
     "HTTPEvent",
     "LifecycleEvent",
     "ReflexDeps",
     "TimerEvent",
     "WebSocketEvent",
+    "get_event_union",
 ]
