@@ -7,10 +7,12 @@ from __future__ import annotations
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from pydantic import BaseModel, Field
 
 from reflex.api.deps import get_store
+from reflex.api.rate_limiting import limiter
+from reflex.config import settings
 from reflex.core.events import Event  # noqa: TC001 - FastAPI needs this at runtime
 from reflex.infra.store import EventStore
 
@@ -50,9 +52,12 @@ class DLQRetryResponse(BaseModel):
     responses={
         201: {"description": "Event published successfully"},
         422: {"description": "Invalid event format"},
+        429: {"description": "Rate limit exceeded"},
     },
 )
+@limiter.limit(lambda: f"{settings.rate_limit_requests}/{settings.rate_limit_window}second")  # pyright: ignore[reportUntypedFunctionDecorator]
 async def publish_event(
+    request: Request,  # Required for rate limiter
     event: Event,
     store: StoreDep,
 ) -> PublishResponse:
@@ -62,6 +67,7 @@ async def publish_event(
     (WebSocketEvent, HTTPEvent, TimerEvent, LifecycleEvent).
 
     Args:
+        request: The incoming request (used for rate limiting)
         event: The event to publish
         store: The EventStore dependency
 

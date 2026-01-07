@@ -4,6 +4,8 @@ This module creates and configures the FastAPI application with:
 - Lifespan handler for startup/shutdown
 - Route registration
 - Observability instrumentation
+- Rate limiting middleware
+- Task supervision for background tasks
 """
 
 from __future__ import annotations
@@ -18,7 +20,9 @@ if TYPE_CHECKING:
 
 import httpx
 from fastapi import FastAPI
+from slowapi.errors import RateLimitExceeded
 
+from reflex.api.rate_limiting import limiter, rate_limit_exceeded_handler
 from reflex.api.routes import events, health, ws
 from reflex.config import settings
 from reflex.infra.database import SessionFactory, create_raw_pool, engine
@@ -81,13 +85,36 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.store = store
     app.state.locks = locks
 
-    # 6. Start agent loop as background task (optional - can be disabled)
-    agent_task: asyncio.Task[None] | None = None
+    # 6. Start agent loop as background task with supervision (optional - can be disabled)
+    shutdown_event = asyncio.Event()
+    supervisor_task: asyncio.Task[None] | None = None
     if settings.environment != "test":
         from reflex.agent.loop import run_loop
 
-        agent_task = asyncio.create_task(run_loop(store))
-        logger.info("Agent loop started")
+        async def supervised_agent_loop() -> None:
+            """Run agent loop with automatic restart on failure."""
+            restart_delay = 1.0
+            max_restart_delay = 60.0
+
+            while not shutdown_event.is_set():
+                try:
+                    logger.info("Starting agent loop...")
+                    await run_loop(store)
+                except asyncio.CancelledError:
+                    logger.info("Agent loop cancelled")
+                    break
+                except Exception:
+                    logger.exception("Agent loop crashed, restarting in %.1fs", restart_delay)
+                    try:
+                        await asyncio.wait_for(shutdown_event.wait(), timeout=restart_delay)
+                        break  # Shutdown requested during delay
+                    except TimeoutError:
+                        pass  # Timeout expired, restart
+                    # Exponential backoff for restarts
+                    restart_delay = min(restart_delay * 2, max_restart_delay)
+
+        supervisor_task = asyncio.create_task(supervised_agent_loop())
+        logger.info("Agent supervisor started")
 
     # Instrument the app with observability
     instrument_app(app)
@@ -99,14 +126,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     finally:
         logger.info("Shutting down application...")
 
-        # 1. Cancel agent loop
-        if agent_task is not None:
-            agent_task.cancel()
+        # 1. Signal shutdown and cancel supervisor
+        shutdown_event.set()
+        if supervisor_task is not None:
+            supervisor_task.cancel()
             try:
-                await agent_task
+                await supervisor_task
             except asyncio.CancelledError:
                 pass
-            logger.info("Agent loop stopped")
+            logger.info("Agent supervisor stopped")
 
         # 2. Close HTTP client
         await http_client.aclose()
@@ -135,6 +163,10 @@ def create_app() -> FastAPI:
         version=settings.version,
         lifespan=lifespan,
     )
+
+    # Add rate limiter
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
     # Register routers
     app.include_router(health.router)

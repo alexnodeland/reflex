@@ -8,7 +8,7 @@ unnecessary validation of non-matching types.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -59,7 +59,7 @@ class HTTPEvent(BaseEvent):
     method: str
     path: str
     headers: dict[str, str] = Field(default_factory=dict)
-    body: dict[str, str] | None = None
+    body: dict[str, Any] | None = None  # Flexible body type for JSON payloads
 
 
 class TimerEvent(BaseEvent):

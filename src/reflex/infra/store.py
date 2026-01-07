@@ -51,6 +51,7 @@ class EventRecord(SQLModel, table=True):
     # Timestamps
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(UTC))
     processed_at: datetime | None = SQLField(default=None)
+    next_retry_at: datetime | None = SQLField(default=None, index=True)
 
     __table_args__ = (Index("ix_events_status_timestamp", "status", "timestamp"),)
 
@@ -148,7 +149,9 @@ class EventStore:
                         SET status = 'processing', attempts = attempts + 1
                         WHERE id IN (
                             SELECT id FROM events
-                            WHERE status = 'pending' {type_filter}
+                            WHERE status = 'pending'
+                                AND (next_retry_at IS NULL OR next_retry_at <= NOW())
+                                {type_filter}
                             ORDER BY timestamp
                             LIMIT :batch_size
                             FOR UPDATE SKIP LOCKED
@@ -203,10 +206,13 @@ class EventStore:
                 await session.commit()
 
     async def nack(self, token: str, error: str | None = None) -> None:
-        """Mark event as failed.
+        """Mark event as failed with exponential backoff for retry.
 
-        If attempts < max_attempts, event returns to pending for retry.
-        Otherwise, moves to dead-letter queue (status = 'dlq').
+        If attempts < max_attempts, event returns to pending for retry
+        after an exponentially increasing delay. Otherwise, moves to
+        dead-letter queue (status = 'dlq').
+
+        Backoff formula: delay = min(base_delay * 2^attempts, max_delay)
 
         Args:
             token: Event ID returned from subscribe()
@@ -214,6 +220,8 @@ class EventStore:
         """
         with logfire.span("store.nack", event_id=token, error=error):
             async with self.session_factory() as session:
+                # Calculate exponential backoff delay
+                # We use attempts directly since it was already incremented in subscribe()
                 await session.execute(  # pyright: ignore[reportDeprecated]
                     text("""
                         UPDATE events SET
@@ -221,10 +229,20 @@ class EventStore:
                                 WHEN attempts >= :max_attempts THEN 'dlq'
                                 ELSE 'pending'
                             END,
-                            error = :error
+                            error = :error,
+                            next_retry_at = CASE
+                                WHEN attempts >= :max_attempts THEN NULL
+                                ELSE NOW() + (LEAST(:base_delay * POWER(2, attempts - 1), :max_delay) || ' seconds')::interval
+                            END
                         WHERE id = :id
                     """),
-                    {"id": token, "error": error, "max_attempts": self.max_attempts},
+                    {
+                        "id": token,
+                        "error": error,
+                        "max_attempts": self.max_attempts,
+                        "base_delay": self.retry_base_delay,
+                        "max_delay": self.retry_max_delay,
+                    },
                 )
                 await session.commit()
 

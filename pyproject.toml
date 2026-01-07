@@ -16,6 +16,7 @@ dependencies = [
     "httpx>=0.28",
     "logfire>=2.0",
     "tenacity>=9.0",
+    "slowapi>=0.1.9",
 ]
 
 [project.optional-dependencies]
