@@ -102,6 +102,109 @@ class TestHealthRoutes:
             assert data["status"] == "not_ready"
             assert data["database"] == "disconnected"
 
+    def test_detailed_health_returns_all_indicators(
+        self, client: TestClient, mock_session_factory: MagicMock
+    ) -> None:
+        """Test /health/detailed returns all component indicators."""
+        # Mock scalar returns for count queries
+        mock_result = MagicMock()
+        mock_result.scalar.return_value = 0
+        mock_session_factory.return_value.__aenter__.return_value.execute = AsyncMock(
+            return_value=mock_result
+        )
+
+        response = client.get("/health/detailed")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["status"] == "healthy"
+        assert "indicators" in data
+        assert len(data["indicators"]) == 3
+
+        # Check all indicators are present
+        names = [ind["name"] for ind in data["indicators"]]
+        assert "database" in names
+        assert "event_queue" in names
+        assert "dlq" in names
+
+    def test_detailed_health_shows_degraded_when_queue_full(
+        self, app: FastAPI, mock_session_factory: MagicMock
+    ) -> None:
+        """Test /health/detailed shows degraded when event queue has many events."""
+
+        # Return different values based on query content
+        async def mock_execute(query: MagicMock) -> MagicMock:
+            result = MagicMock()
+            query_str = str(query)
+            if "pending" in query_str:
+                result.scalar.return_value = 15000  # High pending count
+            elif "dlq" in query_str:
+                result.scalar.return_value = 0
+            else:
+                result.scalar.return_value = 1  # SELECT 1 for db check
+            return result
+
+        mock_session_factory.return_value.__aenter__.return_value.execute = mock_execute
+
+        with TestClient(app) as client:
+            response = client.get("/health/detailed")
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["status"] == "degraded"
+            queue_indicator = next(
+                ind for ind in data["indicators"] if ind["name"] == "event_queue"
+            )
+            assert queue_indicator["status"] == "degraded"
+            assert "15000" in queue_indicator["message"]
+
+    def test_detailed_health_shows_degraded_when_dlq_has_events(
+        self, app: FastAPI, mock_session_factory: MagicMock
+    ) -> None:
+        """Test /health/detailed shows degraded when DLQ has many events."""
+
+        # Return different values based on query content
+        async def mock_execute(query: MagicMock) -> MagicMock:
+            result = MagicMock()
+            query_str = str(query)
+            if "pending" in query_str:
+                result.scalar.return_value = 0
+            elif "dlq" in query_str:
+                result.scalar.return_value = 150  # High DLQ count
+            else:
+                result.scalar.return_value = 1  # SELECT 1 for db check
+            return result
+
+        mock_session_factory.return_value.__aenter__.return_value.execute = mock_execute
+
+        with TestClient(app) as client:
+            response = client.get("/health/detailed")
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["status"] == "degraded"
+            dlq_indicator = next(ind for ind in data["indicators"] if ind["name"] == "dlq")
+            assert dlq_indicator["status"] == "degraded"
+            assert "150" in dlq_indicator["message"]
+
+    def test_detailed_health_shows_unhealthy_when_db_fails(
+        self, app: FastAPI, mock_session_factory: MagicMock
+    ) -> None:
+        """Test /health/detailed shows unhealthy when database fails."""
+        mock_session_factory.return_value.__aenter__.return_value.execute = AsyncMock(
+            side_effect=Exception("Database connection failed")
+        )
+
+        with TestClient(app) as client:
+            response = client.get("/health/detailed")
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["status"] == "unhealthy"
+            db_indicator = next(ind for ind in data["indicators"] if ind["name"] == "database")
+            assert db_indicator["status"] == "unhealthy"
+            assert "Database connection failed" in db_indicator["message"]
+
 
 class TestEventRoutes:
     """Tests for event endpoints."""
@@ -224,6 +327,7 @@ class TestCreateApp:
         routes = [getattr(route, "path", "") for route in app.routes]
 
         assert "/health" in routes
+        assert "/health/detailed" in routes
         assert "/ready" in routes
         assert "/events" in routes
         assert "/events/dlq" in routes
