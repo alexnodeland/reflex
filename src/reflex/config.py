@@ -1,5 +1,7 @@
 """Application configuration with environment variable loading."""
 
+from typing import Literal
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -25,6 +27,10 @@ class Settings(BaseSettings):
     # Rate limiting
     rate_limit_requests: int = 100  # requests per window
     rate_limit_window: int = 60  # window in seconds
+
+    # Locking
+    # Use "memory" for single-process, "postgres" for distributed deployments
+    lock_backend: Literal["memory", "postgres"] = "memory"
 
     # Observability
     logfire_token: str | None = None

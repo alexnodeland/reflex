@@ -152,30 +152,27 @@ class EventStore:
             while True:
                 # Claim and fetch pending events
                 async with self.session_factory() as session:
-                    type_filter = ""
-                    if event_types:
-                        types_str = ",".join(f"'{t}'" for t in event_types)
-                        type_filter = f"AND type IN ({types_str})"
-
-                    query = text(
-                        f"""
+                    # Use parameterized query with PostgreSQL ANY() for type filtering
+                    # This avoids SQL injection by never interpolating user input
+                    query = text("""
                         UPDATE events
                         SET status = 'processing', attempts = attempts + 1
                         WHERE id IN (
                             SELECT id FROM events
                             WHERE status = 'pending'
                                 AND (next_retry_at IS NULL OR next_retry_at <= NOW())
-                                {type_filter}
+                                AND (:event_types::text[] IS NULL OR type = ANY(:event_types))
                             ORDER BY timestamp
                             LIMIT :batch_size
                             FOR UPDATE SKIP LOCKED
                         )
                         RETURNING id, payload
-                    """  # noqa: S608 - type_filter built from validated event type strings
-                    )
+                    """)
 
-                    # pyright: ignore[reportDeprecated] - need execute() for raw SQL
-                    result = await session.execute(query, {"batch_size": batch_size})  # pyright: ignore[reportDeprecated]
+                    result = await session.execute(  # pyright: ignore[reportDeprecated]
+                        query,
+                        {"batch_size": batch_size, "event_types": event_types},
+                    )
                     rows = result.fetchall()
                     await session.commit()
 

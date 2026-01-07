@@ -26,7 +26,7 @@ from reflex.api.rate_limiting import limiter, rate_limit_exceeded_handler
 from reflex.api.routes import events, health, ws
 from reflex.config import settings
 from reflex.infra.database import SessionFactory, create_raw_pool, engine
-from reflex.infra.locks import ScopedLocks
+from reflex.infra.locks import ScopedLocks, create_lock_backend
 from reflex.infra.observability import configure_observability, instrument_app
 from reflex.infra.store import EventStore
 
@@ -74,8 +74,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 4. Create EventStore
     store = EventStore(pool=pool, session_factory=SessionFactory)
 
-    # 5. Create ScopedLocks
-    locks = ScopedLocks()
+    # 5. Create ScopedLocks with configurable backend
+    # Use "postgres" for distributed deployments (Kubernetes, multi-replica)
+    # Use "memory" for single-process deployments (default, with warning)
+    lock_backend = create_lock_backend(
+        settings.lock_backend,
+        pool=pool,
+        warn_on_memory=(settings.environment != "test"),
+    )
+    locks = ScopedLocks(lock_backend)
+    logger.info("Lock backend: %s", settings.lock_backend)
 
     # Store in app.state for access in routes
     app.state.engine = engine
@@ -136,15 +144,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 pass
             logger.info("Agent supervisor stopped")
 
-        # 2. Close HTTP client
+        # 2. Close lock backend
+        await lock_backend.close()
+        logger.info("Lock backend closed")
+
+        # 3. Close HTTP client
         await http_client.aclose()
         logger.info("HTTP client closed")
 
-        # 3. Close raw pool
+        # 4. Close raw pool
         await pool.close()
         logger.info("Database pool closed")
 
-        # 4. Dispose engine
+        # 5. Dispose engine
         await engine.dispose()
         logger.info("Database engine disposed")
 
