@@ -43,23 +43,26 @@ class TestSummaryResponse:
     def test_summary_response_creation(self) -> None:
         """Test creating a SummaryResponse."""
         response = SummaryResponse(
-            title="Daily Event Summary",
+            period="Last 24 hours",
             highlights=["100 WebSocket events", "5 errors detected"],
             event_count=105,
+            concerns=["Connection timeout rate increased"],
         )
 
-        assert response.title == "Daily Event Summary"
+        assert response.period == "Last 24 hours"
         assert len(response.highlights) == 2
         assert response.event_count == 105
+        assert len(response.concerns) == 1
         assert response.notable_patterns == []  # Default
         assert response.recommendations == []  # Default
 
     def test_summary_response_with_all_fields(self) -> None:
         """Test SummaryResponse with all optional fields."""
         response = SummaryResponse(
-            title="Hourly Summary",
+            period="Last hour",
             highlights=["High traffic detected"],
             event_count=500,
+            concerns=["Error rate above threshold"],
             notable_patterns=["Traffic spike at 14:00"],
             recommendations=["Consider scaling up"],
         )

@@ -38,9 +38,13 @@ class AlertResponse(BaseModel):
 class SummaryResponse(BaseModel):
     """Structured response from the summary agent."""
 
-    title: str = Field(description="Summary title")
-    highlights: list[str] = Field(description="Key highlights from the events")
+    # Required fields (per PRD)
+    period: str = Field(description="Time period covered (e.g., 'Last 24 hours')")
     event_count: int = Field(description="Total events summarized")
+    highlights: list[str] = Field(description="Key highlights from the events")
+    concerns: list[str] = Field(description="Issues that need attention")
+
+    # Optional extended fields
     notable_patterns: list[str] = Field(
         default_factory=list, description="Notable patterns detected"
     )
