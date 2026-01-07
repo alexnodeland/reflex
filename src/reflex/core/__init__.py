@@ -1,5 +1,6 @@
 """Core domain types - events, context, dependencies."""
 
+from reflex.core.context import AgentContext
 from reflex.core.events import (
     BaseEvent,
     Event,
@@ -11,6 +12,7 @@ from reflex.core.events import (
 )
 
 __all__ = [
+    "AgentContext",
     "BaseEvent",
     "Event",
     "EventMeta",
