@@ -22,9 +22,11 @@ import httpx
 from fastapi import FastAPI
 from slowapi.errors import RateLimitExceeded
 
+from reflex.api.errors import reflex_exception_handler
 from reflex.api.rate_limiting import create_limiter, rate_limit_exceeded_handler
 from reflex.api.routes import events, health, ws
 from reflex.config import get_settings
+from reflex.core.errors import ReflexError
 from reflex.infra.database import SessionFactory, create_raw_pool, engine
 from reflex.infra.locks import ScopedLocks, create_lock_backend
 from reflex.infra.observability import configure_observability, instrument_app
@@ -183,6 +185,9 @@ def create_app() -> FastAPI:
     limiter = create_limiter(settings)
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
+    # Add Reflex error handler
+    app.add_exception_handler(ReflexError, reflex_exception_handler)  # type: ignore[arg-type]
 
     # Register routers
     app.include_router(health.router)

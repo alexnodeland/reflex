@@ -7,12 +7,13 @@ from __future__ import annotations
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
+from fastapi import APIRouter, Depends, Path, Query, Request, status
 from pydantic import BaseModel, Field
 
 from reflex.api.deps import get_store
 from reflex.api.rate_limiting import limiter
 from reflex.config import get_settings
+from reflex.core.errors import EventNotFoundError
 from reflex.core.events import Event  # noqa: TC001 - FastAPI needs this at runtime
 from reflex.infra.store import EventStore
 
@@ -140,12 +141,12 @@ async def retry_dlq_event(
         Retry status and event ID
 
     Raises:
-        HTTPException: If event is not found in DLQ
+        EventNotFoundError: If event is not found in DLQ
     """
     success = await store.dlq_retry(event_id)
     if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Event {event_id} not found in dead-letter queue",
+        raise EventNotFoundError(
+            f"Event {event_id} not found in dead-letter queue",
+            details={"event_id": event_id},
         )
     return DLQRetryResponse(status="pending", event_id=event_id)

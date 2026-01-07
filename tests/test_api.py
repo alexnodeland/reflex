@@ -9,7 +9,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from reflex.api.errors import reflex_exception_handler
 from reflex.api.routes import events, health
+from reflex.core.errors import ReflexError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -42,6 +44,9 @@ def app(mock_store: AsyncMock, mock_session_factory: MagicMock) -> FastAPI:
     app = FastAPI()
     app.include_router(health.router)
     app.include_router(events.router)
+
+    # Add exception handler for ReflexError
+    app.add_exception_handler(ReflexError, reflex_exception_handler)  # type: ignore[arg-type]
 
     # Set up app state with mocked dependencies
     app.state.store = mock_store
@@ -187,7 +192,11 @@ class TestEventRoutes:
         response = client.post("/events/dlq/unknown-id/retry")
         assert response.status_code == 404
         data = response.json()
-        assert "not found" in data["detail"].lower()
+        # Check structured error response
+        assert "error" in data
+        assert data["error"]["code"] == "EVENT_NOT_FOUND"
+        assert "not found" in data["error"]["message"].lower()
+        assert data["error"]["details"]["event_id"] == "unknown-id"
 
 
 class TestCreateApp:
