@@ -1,4 +1,17 @@
-.PHONY: dev test lint type-check format clean logs shell
+.PHONY: dev test lint type-check format clean logs shell ci
+
+# CI - Emulate GitHub Actions pipeline locally
+ci:
+	@echo "=== Running CI Pipeline ==="
+	@echo "\n--- Lint Check ---"
+	python -m ruff check src tests
+	@echo "\n--- Format Check ---"
+	python -m ruff format --check src tests
+	@echo "\n--- Type Check ---"
+	python -m pyright src
+	@echo "\n--- Tests ---"
+	python -m pytest -v
+	@echo "\n=== CI Pipeline Complete ==="
 
 # Development
 dev:

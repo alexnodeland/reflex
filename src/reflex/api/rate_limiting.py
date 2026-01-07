@@ -5,11 +5,15 @@ This module provides rate limiting using slowapi to prevent API abuse.
 
 from __future__ import annotations
 
-from fastapi import Request
+from typing import TYPE_CHECKING
+
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
-from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+
+if TYPE_CHECKING:
+    from fastapi import Request
+    from slowapi.errors import RateLimitExceeded
 
 # Rate limiter instance
 limiter = Limiter(key_func=get_remote_address)

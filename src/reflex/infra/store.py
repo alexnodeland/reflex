@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 import logfire
 from pydantic import TypeAdapter
 from sqlalchemy import Index, text
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlmodel import Field as SQLField
 from sqlmodel import SQLModel
 
@@ -40,7 +41,10 @@ class EventRecord(SQLModel, table=True):
     id: str = SQLField(primary_key=True)
     type: str = SQLField(index=True)
     source: str = SQLField(index=True)
-    timestamp: datetime = SQLField(index=True)
+    timestamp: datetime = SQLField(
+        index=True,
+        sa_type=TIMESTAMP(timezone=True),  # pyright: ignore[reportArgumentType]
+    )
     payload: str  # JSON-serialized event
 
     # Processing state
@@ -48,10 +52,20 @@ class EventRecord(SQLModel, table=True):
     attempts: int = SQLField(default=0)
     error: str | None = SQLField(default=None)
 
-    # Timestamps
-    created_at: datetime = SQLField(default_factory=lambda: datetime.now(UTC))
-    processed_at: datetime | None = SQLField(default=None)
-    next_retry_at: datetime | None = SQLField(default=None, index=True)
+    # Timestamps (use timezone-aware TIMESTAMP for UTC datetimes)
+    created_at: datetime = SQLField(
+        default_factory=lambda: datetime.now(UTC),
+        sa_type=TIMESTAMP(timezone=True),  # pyright: ignore[reportArgumentType]
+    )
+    processed_at: datetime | None = SQLField(
+        default=None,
+        sa_type=TIMESTAMP(timezone=True),  # pyright: ignore[reportArgumentType]
+    )
+    next_retry_at: datetime | None = SQLField(
+        default=None,
+        index=True,
+        sa_type=TIMESTAMP(timezone=True),  # pyright: ignore[reportArgumentType]
+    )
 
     __table_args__ = (Index("ix_events_status_timestamp", "status", "timestamp"),)
 
@@ -232,7 +246,10 @@ class EventStore:
                             error = :error,
                             next_retry_at = CASE
                                 WHEN attempts >= :max_attempts THEN NULL
-                                ELSE NOW() + (LEAST(:base_delay * POWER(2, attempts - 1), :max_delay) || ' seconds')::interval
+                                ELSE NOW() + (
+                                    LEAST(:base_delay * POWER(2, attempts - 1), :max_delay)
+                                    || ' seconds'
+                                )::interval
                             END
                         WHERE id = :id
                     """),
