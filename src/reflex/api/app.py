@@ -27,7 +27,7 @@ from reflex.api.rate_limiting import create_limiter, rate_limit_exceeded_handler
 from reflex.api.routes import events, health, ws
 from reflex.config import get_settings
 from reflex.core.errors import ReflexError
-from reflex.infra.database import SessionFactory, create_raw_pool, engine
+from reflex.infra.database import SessionFactory, create_raw_pool, engine, init_database
 from reflex.infra.locks import ScopedLocks, create_lock_backend
 from reflex.infra.observability import configure_observability, instrument_app
 from reflex.infra.store import EventStore
@@ -65,7 +65,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 1. Configure observability
     configure_observability()
 
-    # 2. Create raw pool for LISTEN/NOTIFY
+    # 2. Initialize database tables (creates if not exist)
+    await init_database()
+
+    # 3. Create raw pool for LISTEN/NOTIFY
     pool = await create_raw_pool()
 
     # 3. Create HTTP client

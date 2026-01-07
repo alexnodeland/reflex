@@ -20,12 +20,15 @@ def configure_observability() -> None:
     settings = get_settings()
     # Console output only in development mode
     console_option = logfire.ConsoleOptions() if settings.environment == "development" else False
+    # Only send to Logfire if token is present
+    send_to_logfire = "if-token-present" if not settings.logfire_token else True
     logfire.configure(
         token=settings.logfire_token,
         service_name="reflex",
         service_version=settings.version,
         environment=settings.environment,
         console=console_option,
+        send_to_logfire=send_to_logfire,
     )
 
 
