@@ -18,6 +18,7 @@ Your agent is running at:
 - **API**: http://localhost:8000
 - **WebSocket**: ws://localhost:8000/ws
 - **Health**: http://localhost:8000/health
+- **Detailed Health**: http://localhost:8000/health/detailed
 
 Now rip out the example agent and build your own.
 
@@ -74,6 +75,11 @@ Reflex is a production-ready template for building real-time AI agents as contin
 |-----------|----------|---------|
 | EventStore | `src/reflex/infra/store.py` | Persistent event queue with pub/sub |
 | Events | `src/reflex/core/events.py` | Pydantic models with discriminated unions |
+| EventRegistry | `src/reflex/core/events.py` | Runtime event type registration |
+| Triggers | `src/reflex/agent/triggers.py` | Filter + agent connections |
+| Filters | `src/reflex/agent/filters.py` | Event matching predicates |
+| Dependencies | `src/reflex/core/deps.py` | Focused dependency containers |
+| Errors | `src/reflex/core/errors.py` | Structured error handling |
 | Agent | `src/reflex/agent/agents.py` | PydanticAI agent with tools |
 | API | `src/reflex/api/app.py` | FastAPI with WebSocket support |
 | Config | `src/reflex/config.py` | Pydantic-settings configuration |
@@ -84,14 +90,23 @@ Reflex is a production-ready template for building real-time AI agents as contin
 reflex/
 ├── docker/              # Docker configuration
 │   └── Dockerfile       # Multi-stage production build
+├── docs/                # Documentation
+│   └── extending.md     # Extension guide
+├── examples/            # Working examples
+│   └── basic/           # Error monitoring example
 ├── src/reflex/          # Source code
 │   ├── infra/           # Infrastructure (keep this)
 │   │   ├── database.py  # PostgreSQL connection setup
 │   │   └── store.py     # EventStore implementation
 │   ├── core/            # Core types (modify this)
-│   │   └── events.py    # Event definitions
+│   │   ├── events.py    # Event definitions & registry
+│   │   ├── deps.py      # Dependency containers
+│   │   ├── errors.py    # Structured error handling
+│   │   └── types.py     # Protocol definitions
 │   ├── agent/           # Agent logic (replace this)
-│   │   └── agents.py    # PydanticAI agent and tools
+│   │   ├── agents.py    # PydanticAI agent and tools
+│   │   ├── triggers.py  # Trigger definitions
+│   │   └── filters.py   # Event filters
 │   └── api/             # API layer (modify this)
 │       └── app.py       # FastAPI application
 ├── tests/               # Test suite
@@ -154,21 +169,39 @@ Copy `.env.example` to `.env` and configure:
 
 ## Extending Reflex
 
+For comprehensive extension documentation, see [docs/extending.md](docs/extending.md) and the [examples/basic](examples/basic/) directory.
+
 ### Adding Event Types
 
-Edit `src/reflex/core/events.py`:
+Use the `@EventRegistry.register` decorator for runtime registration:
 
 ```python
+from typing import Literal
+from reflex import BaseEvent, EventRegistry
+
+@EventRegistry.register
 class MyCustomEvent(BaseEvent):
     """My custom event type."""
     type: Literal["my.custom"] = "my.custom"
     custom_field: str
 
-# Add to the discriminated union
-Event = Annotated[
-    WebSocketEvent | HTTPEvent | TimerEvent | LifecycleEvent | MyCustomEvent,
-    Field(discriminator="type"),
-]
+# Event is automatically added to the discriminated union
+```
+
+### Adding Triggers
+
+Use the `@trigger` decorator to connect filters to agents:
+
+```python
+from reflex import trigger, type_filter, source_filter, SimpleAgent
+
+@trigger(
+    name="my-trigger",
+    filter=type_filter("my.custom") & source_filter("production-*"),
+    agent=SimpleAgent(my_handler_func),
+)
+def my_trigger_handler():
+    pass
 ```
 
 ### Adding Agent Tools
@@ -277,10 +310,10 @@ with logfire.span("my-operation", key=value):
 
 ## Documentation
 
-See the `.github/plans/` directory for detailed documentation:
-
-- `prd.md` - Product Requirements Document
-- `developer_brief.md` - Development Plan
+- [docs/extending.md](docs/extending.md) - Comprehensive extension guide
+- [examples/basic](examples/basic/) - Working example with custom events and triggers
+- `.github/plans/prd.md` - Product Requirements Document
+- `.github/plans/developer_brief.md` - Development Plan
 
 ## Contributing
 
