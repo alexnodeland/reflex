@@ -2,19 +2,28 @@
 
 Triggers connect event filters to agents, determining which
 agent should handle which events.
+
+This module provides:
+1. Trigger class - maps event filters to agents
+2. TriggerRegistry - manages collections of triggers
+3. Trigger functions - evaluate context and fire agents
 """
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from reflex.agent.base import Agent
     from reflex.agent.filters import EventFilter
+    from reflex.core.context import DecisionContext
+    from reflex.core.deps import ReflexDeps
     from reflex.core.events import Event
+
+# Type alias for trigger functions
+TriggerFunc = Callable[["DecisionContext", "ReflexDeps"], Awaitable[Any | None]]
 
 
 @dataclass
@@ -177,3 +186,135 @@ def trigger(
         return agent_cls
 
     return decorator
+
+
+# --- Trigger Functions ---
+#
+# These are higher-order functions that create trigger evaluators.
+# They take configuration and return an async function that evaluates
+# the DecisionContext and returns an action (or None to skip).
+
+
+def error_threshold_trigger(
+    threshold: int,
+    window_seconds: float = 60.0,
+    error_types: tuple[str, ...] = ("lifecycle",),
+) -> TriggerFunc:
+    """Create a trigger that fires when error count exceeds threshold.
+
+    Monitors events of specified types within a time window and
+    fires when the count exceeds the threshold.
+
+    Args:
+        threshold: Number of errors to trigger alert
+        window_seconds: Time window to count errors in
+        error_types: Event types to consider as errors
+
+    Returns:
+        Trigger function
+
+    Example:
+        trigger = error_threshold_trigger(
+            threshold=5,
+            window_seconds=60,
+            error_types=("lifecycle",),
+        )
+        result = await trigger(ctx, deps)
+        if result:
+            # Alert was generated
+    """
+
+    async def _trigger(ctx: DecisionContext, deps: ReflexDeps) -> dict[str, Any] | None:
+        # Get errors in window
+        recent = ctx.window(window_seconds)
+        errors = [e for e in recent if e.type in error_types]
+
+        if len(errors) >= threshold:
+            ctx.mark_action()
+            return {
+                "triggered": True,
+                "error_count": len(errors),
+                "threshold": threshold,
+                "window_seconds": window_seconds,
+                "summary": ctx.summarize(max_events=5),
+            }
+        return None
+
+    return _trigger
+
+
+def periodic_summary_trigger(
+    event_count: int = 100,
+    max_interval_seconds: float | None = None,
+) -> TriggerFunc:
+    """Create a trigger that fires after accumulating N events.
+
+    Fires when the context accumulates `event_count` events since
+    the last action, optionally with a max time interval.
+
+    Args:
+        event_count: Number of events to accumulate before firing
+        max_interval_seconds: Max time between summaries (optional)
+
+    Returns:
+        Trigger function
+
+    Example:
+        trigger = periodic_summary_trigger(event_count=50)
+        result = await trigger(ctx, deps)
+        if result:
+            # Summary was generated
+    """
+    from datetime import UTC, datetime
+
+    async def _trigger(ctx: DecisionContext, deps: ReflexDeps) -> dict[str, Any] | None:
+        events_since_action = ctx.since_last_action()
+
+        # Check event count threshold
+        should_fire = len(events_since_action) >= event_count
+
+        # Check time interval if specified
+        if not should_fire and max_interval_seconds is not None:
+            if ctx.last_action_time is not None:
+                elapsed = (datetime.now(UTC) - ctx.last_action_time).total_seconds()
+                should_fire = elapsed >= max_interval_seconds and len(events_since_action) > 0
+
+        if should_fire:
+            summary = ctx.summarize()
+            counts = ctx.count_by_type()
+            ctx.clear()
+            return {
+                "triggered": True,
+                "event_count": len(events_since_action),
+                "counts_by_type": counts,
+                "summary": summary,
+            }
+        return None
+
+    return _trigger
+
+
+def immediate_trigger() -> TriggerFunc:
+    """Create a trigger that fires on every event.
+
+    Useful for real-time processing where every event
+    should invoke an agent.
+
+    Returns:
+        Trigger function
+
+    Example:
+        trigger = immediate_trigger()
+        result = await trigger(ctx, deps)  # Always returns a result
+    """
+
+    async def _trigger(ctx: DecisionContext, deps: ReflexDeps) -> dict[str, Any]:
+        events = ctx.since_last_action()
+        ctx.mark_action()
+        return {
+            "triggered": True,
+            "event_count": len(events),
+            "latest_event": events[-1] if events else None,
+        }
+
+    return _trigger

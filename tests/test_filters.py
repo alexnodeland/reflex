@@ -6,12 +6,19 @@ from reflex.agent.filters import (
     OrFilter,
     SourceFilter,
     TypeFilter,
+    all_filters,
     all_of,
+    any_filter,
     any_of,
+    dedupe_filter,
+    event_type_filter,
+    keyword_filter,
     not_matching,
+    rate_limit_filter,
     source_filter,
     type_filter,
 )
+from reflex.core.context import DecisionContext
 from reflex.core.events import HTTPEvent, TimerEvent, WebSocketEvent
 
 
@@ -226,3 +233,178 @@ class TestCompositeFilters:
 
         assert f.matches(ws)
         assert not f.matches(timer)
+
+
+# --- Filter function tests ---
+
+
+class TestKeywordFilter:
+    """Tests for keyword_filter function."""
+
+    def test_keyword_match(self) -> None:
+        """Test matching keyword in event content."""
+        ctx = DecisionContext()
+        f = keyword_filter("error", "failed")
+
+        event_match = WebSocketEvent(source="test", connection_id="1", content="An error occurred")
+        event_no_match = WebSocketEvent(source="test", connection_id="1", content="Success")
+
+        assert f(event_match, ctx)
+        assert not f(event_no_match, ctx)
+
+    def test_keyword_case_insensitive(self) -> None:
+        """Test case insensitive keyword matching."""
+        ctx = DecisionContext()
+        f = keyword_filter("error", case_sensitive=False)
+
+        event = WebSocketEvent(source="test", connection_id="1", content="ERROR in system")
+        assert f(event, ctx)
+
+    def test_keyword_case_sensitive(self) -> None:
+        """Test case sensitive keyword matching."""
+        ctx = DecisionContext()
+        f = keyword_filter("Error", case_sensitive=True)
+
+        event_match = WebSocketEvent(source="test", connection_id="1", content="Error occurred")
+        event_no_match = WebSocketEvent(source="test", connection_id="1", content="error occurred")
+
+        assert f(event_match, ctx)
+        assert not f(event_no_match, ctx)
+
+    def test_keyword_in_any_field(self) -> None:
+        """Test keyword matching in any serialized field."""
+        ctx = DecisionContext()
+        f = keyword_filter("api-endpoint")
+
+        event = WebSocketEvent(source="api-endpoint:123", connection_id="1", content="x")
+        assert f(event, ctx)
+
+
+class TestEventTypeFilter:
+    """Tests for event_type_filter function."""
+
+    def test_type_match(self) -> None:
+        """Test matching event by type."""
+        ctx = DecisionContext()
+        f = event_type_filter("ws.message", "http.request")
+
+        ws_event = WebSocketEvent(source="test", connection_id="1", content="hi")
+        http_event = HTTPEvent(source="test", method="GET", path="/")
+        timer_event = TimerEvent(source="test", timer_name="tick")
+
+        assert f(ws_event, ctx)
+        assert f(http_event, ctx)
+        assert not f(timer_event, ctx)
+
+
+class TestRateLimitFilter:
+    """Tests for rate_limit_filter function."""
+
+    def test_under_limit(self) -> None:
+        """Test events under rate limit are accepted."""
+        ctx = DecisionContext()
+        f = rate_limit_filter(max_events=5, window_seconds=60)
+
+        event = WebSocketEvent(source="test", connection_id="1", content="hi")
+
+        # First 5 should pass
+        for _ in range(5):
+            assert f(event, ctx)
+
+    def test_over_limit(self) -> None:
+        """Test events over rate limit are rejected."""
+        ctx = DecisionContext()
+        f = rate_limit_filter(max_events=3, window_seconds=60)
+
+        event = WebSocketEvent(source="test", connection_id="1", content="hi")
+
+        # First 3 should pass
+        assert f(event, ctx)
+        assert f(event, ctx)
+        assert f(event, ctx)
+
+        # 4th should be rejected
+        assert not f(event, ctx)
+
+
+class TestDedupeFilter:
+    """Tests for dedupe_filter function."""
+
+    def test_first_event_passes(self) -> None:
+        """Test first event with unique key passes."""
+        ctx = DecisionContext()
+        f = dedupe_filter(key_func=lambda e: e.id)
+
+        event = WebSocketEvent(source="test", connection_id="1", content="hi")
+        assert f(event, ctx)
+
+    def test_duplicate_rejected(self) -> None:
+        """Test duplicate events are rejected."""
+        ctx = DecisionContext()
+        f = dedupe_filter(key_func=lambda e: e.id)
+
+        event = WebSocketEvent(id="same-id", source="test", connection_id="1", content="hi")
+
+        assert f(event, ctx)  # First pass
+        assert not f(event, ctx)  # Duplicate rejected
+
+    def test_different_keys_pass(self) -> None:
+        """Test events with different keys pass."""
+        ctx = DecisionContext()
+        f = dedupe_filter(key_func=lambda e: e.id)
+
+        event1 = WebSocketEvent(id="id-1", source="test", connection_id="1", content="hi")
+        event2 = WebSocketEvent(id="id-2", source="test", connection_id="1", content="hi")
+
+        assert f(event1, ctx)
+        assert f(event2, ctx)
+
+    def test_lru_eviction(self) -> None:
+        """Test LRU eviction when max_keys exceeded."""
+        ctx = DecisionContext()
+        f = dedupe_filter(key_func=lambda e: e.id, max_keys=3)
+
+        # Add 4 events to trigger eviction
+        for i in range(4):
+            event = WebSocketEvent(id=f"id-{i}", source="test", connection_id="1", content="hi")
+            assert f(event, ctx)
+
+        # First event should have been evicted
+        event_first = WebSocketEvent(id="id-0", source="test", connection_id="1", content="hi")
+        assert f(event_first, ctx)  # Should pass as it was evicted
+
+
+class TestFilterFunctionComposition:
+    """Tests for combining filter functions."""
+
+    def test_all_filters_and(self) -> None:
+        """Test all_filters combines with AND logic."""
+        ctx = DecisionContext()
+        f = all_filters(
+            event_type_filter("ws.message"),
+            keyword_filter("hello"),
+        )
+
+        matching = WebSocketEvent(source="test", connection_id="1", content="hello world")
+        wrong_type = HTTPEvent(source="test", method="GET", path="/hello")
+        wrong_content = WebSocketEvent(source="test", connection_id="1", content="bye")
+
+        assert f(matching, ctx)
+        assert not f(wrong_type, ctx)
+        assert not f(wrong_content, ctx)
+
+    def test_any_filter_or(self) -> None:
+        """Test any_filter combines with OR logic."""
+        ctx = DecisionContext()
+        f = any_filter(
+            event_type_filter("ws.message"),
+            event_type_filter("http.request"),
+        )
+
+        ws_event = WebSocketEvent(source="test", connection_id="1", content="hi")
+        http_event = HTTPEvent(source="test", method="GET", path="/")
+        timer_event = TimerEvent(source="test", timer_name="tick")
+
+        assert f(ws_event, ctx)
+        assert f(http_event, ctx)
+        assert not f(timer_event, ctx)
