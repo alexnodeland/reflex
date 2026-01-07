@@ -52,9 +52,7 @@ class EventRecord(SQLModel, table=True):
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(UTC))
     processed_at: datetime | None = SQLField(default=None)
 
-    __table_args__ = (
-        Index("ix_events_status_timestamp", "status", "timestamp"),
-    )
+    __table_args__ = (Index("ix_events_status_timestamp", "status", "timestamp"),)
 
 
 class EventStore:
