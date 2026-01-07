@@ -27,6 +27,26 @@ if TYPE_CHECKING:
     from sqlmodel.ext.asyncio.session import AsyncSession
 
 
+# Lazy event adapter to avoid circular imports at module load time.
+# The adapter is initialized on first use, ensuring the import only
+# happens once rather than on every function call.
+_event_adapter: TypeAdapter[Any] | None = None
+
+
+def _get_event_adapter() -> TypeAdapter[Any]:
+    """Get the Event TypeAdapter, initializing lazily if needed.
+
+    Returns:
+        TypeAdapter for parsing Event JSON
+    """
+    global _event_adapter
+    if _event_adapter is None:
+        from reflex.core.events import Event
+
+        _event_adapter = TypeAdapter(Event)
+    return _event_adapter
+
+
 class EventRecord(SQLModel, table=True):
     """Persistent event storage.
 
@@ -140,10 +160,7 @@ class EventStore:
         Yields:
             Tuple of (event, token) where token is used for ack/nack
         """
-        # Import here to avoid circular dependency
-        from reflex.core.events import Event
-
-        adapter: TypeAdapter[Event] = TypeAdapter(Event)
+        adapter = _get_event_adapter()
 
         async with self.pool.acquire() as conn:  # type: ignore[union-attr]
             # Set up listener
@@ -280,10 +297,7 @@ class EventStore:
         Yields:
             Event objects
         """
-        # Import here to avoid circular dependency
-        from reflex.core.events import Event
-
-        adapter: TypeAdapter[Event] = TypeAdapter(Event)
+        adapter = _get_event_adapter()
 
         end_str = end.isoformat() if end else None
         with logfire.span("store.replay", start=start.isoformat(), end=end_str):
@@ -325,10 +339,7 @@ class EventStore:
         Returns:
             List of events in DLQ
         """
-        # Import here to avoid circular dependency
-        from reflex.core.events import Event
-
-        adapter: TypeAdapter[Event] = TypeAdapter(Event)
+        adapter = _get_event_adapter()
 
         async with self.session_factory() as session:
             result = await session.execute(  # pyright: ignore[reportDeprecated]

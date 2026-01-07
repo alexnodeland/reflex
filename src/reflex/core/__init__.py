@@ -1,4 +1,4 @@
-"""Core domain types - events, context, dependencies, errors."""
+"""Core domain types - events, context, dependencies, errors, protocols."""
 
 from reflex.core.context import AgentContext, DecisionContext
 from reflex.core.deps import (
@@ -29,6 +29,13 @@ from reflex.core.events import (
     WebSocketEvent,
     get_event_union,
 )
+from reflex.core.types import (
+    EventMetaProtocol,
+    EventProtocol,
+    EventStoreProtocol,
+    EventWithMetaProtocol,
+    LockBackendProtocol,
+)
 
 __all__ = [
     "AgentContext",
@@ -38,11 +45,16 @@ __all__ = [
     "ErrorCode",
     "Event",
     "EventMeta",
+    "EventMetaProtocol",
     "EventNotFoundError",
+    "EventProtocol",
     "EventRegistry",
+    "EventStoreProtocol",
+    "EventWithMetaProtocol",
     "ExecutionContext",
     "HTTPEvent",
     "LifecycleEvent",
+    "LockBackendProtocol",
     "LockError",
     "NetworkContext",
     "PublicationError",
