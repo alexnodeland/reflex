@@ -144,18 +144,51 @@ class TriggerRegistry:
         self._triggers.clear()
 
 
-# Global registry instance
-_registry = TriggerRegistry()
+# Default registry instance (can be overridden for testing)
+_default_registry: TriggerRegistry | None = None
+
+
+def get_registry() -> TriggerRegistry:
+    """Get the current trigger registry.
+
+    Returns the configured registry instance, creating a default one if needed.
+    This function should be used instead of accessing a global registry directly
+    for better testability.
+
+    Returns:
+        The current TriggerRegistry instance
+    """
+    global _default_registry
+    if _default_registry is None:
+        _default_registry = TriggerRegistry()
+    return _default_registry
+
+
+def configure_registry(registry: TriggerRegistry | None) -> None:
+    """Configure the trigger registry instance.
+
+    Use this function to inject a custom registry, particularly useful for testing.
+    Pass None to reset to default behavior.
+
+    Args:
+        registry: Custom TriggerRegistry instance, or None to reset
+
+    Example:
+        # In tests
+        test_registry = TriggerRegistry()
+        configure_registry(test_registry)
+        try:
+            # ... run tests
+        finally:
+            configure_registry(None)  # Reset
+    """
+    global _default_registry
+    _default_registry = registry
 
 
 def register_trigger(trigger: Trigger) -> None:
     """Register a trigger in the global registry."""
-    _registry.register(trigger)
-
-
-def get_registry() -> TriggerRegistry:
-    """Get the global trigger registry."""
-    return _registry
+    get_registry().register(trigger)
 
 
 def trigger(

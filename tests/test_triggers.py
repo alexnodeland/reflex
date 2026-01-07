@@ -218,3 +218,52 @@ class TestTriggerRegistry:
 
         registry.clear()
         assert len(registry.triggers) == 0
+
+
+class TestRegistryInjection:
+    """Tests for injectable registry."""
+
+    def test_get_registry_returns_registry(self) -> None:
+        """Test that get_registry returns a TriggerRegistry instance."""
+        from reflex.agent.triggers import TriggerRegistry, get_registry
+
+        registry = get_registry()
+        assert isinstance(registry, TriggerRegistry)
+
+    def test_configure_registry_overrides(self) -> None:
+        """Test that configure_registry allows custom registry."""
+        from reflex.agent.triggers import TriggerRegistry, configure_registry, get_registry
+
+        # Create custom registry
+        custom = TriggerRegistry()
+        custom.register(
+            Trigger(
+                name="custom_trigger",
+                filter=TypeFilter(types=["ws.message"]),
+                agent=DummyAgent(),
+            )
+        )
+        configure_registry(custom)
+
+        try:
+            registry = get_registry()
+            assert registry is custom
+            assert registry.get("custom_trigger") is not None
+        finally:
+            # Reset to default
+            configure_registry(None)
+
+    def test_configure_registry_reset(self) -> None:
+        """Test that configure_registry(None) resets to default."""
+        from reflex.agent.triggers import TriggerRegistry, configure_registry, get_registry
+
+        # Set custom
+        custom = TriggerRegistry()
+        configure_registry(custom)
+
+        # Reset
+        configure_registry(None)
+
+        # Should create new default
+        registry = get_registry()
+        assert registry is not custom

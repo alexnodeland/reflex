@@ -95,4 +95,48 @@ class Settings(BaseSettings):
         return v
 
 
+# Default settings instance (can be overridden for testing)
+_default_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get the current settings instance.
+
+    Returns the configured settings instance, creating a default one if needed.
+    This function should be used instead of the global `settings` instance
+    for better testability.
+
+    Returns:
+        The current Settings instance
+    """
+    global _default_settings
+    if _default_settings is None:
+        _default_settings = Settings()
+    return _default_settings
+
+
+def configure_settings(settings: Settings | None) -> None:
+    """Configure the settings instance.
+
+    Use this function to inject custom settings, particularly useful for testing.
+    Pass None to reset to default behavior.
+
+    Args:
+        settings: Custom Settings instance, or None to reset
+
+    Example:
+        # In tests
+        test_settings = Settings(environment="test", database_url="...")
+        configure_settings(test_settings)
+        try:
+            # ... run tests
+        finally:
+            configure_settings(None)  # Reset
+    """
+    global _default_settings
+    _default_settings = settings
+
+
+# Backward compatibility: Keep the global singleton
+# New code should use get_settings() instead
 settings = Settings()

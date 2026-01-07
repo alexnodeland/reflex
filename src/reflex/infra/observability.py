@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import logfire
 
-from reflex.config import settings
+from reflex.config import get_settings
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -17,6 +17,7 @@ def configure_observability() -> None:
 
     Call once at application startup.
     """
+    settings = get_settings()
     # Console output only in development mode
     console_option = logfire.ConsoleOptions() if settings.environment == "development" else False
     logfire.configure(

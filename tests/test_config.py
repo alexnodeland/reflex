@@ -86,3 +86,45 @@ class TestSettingsValidation:
 
         assert settings.event_retry_base_delay == 2.5
         assert settings.event_retry_max_delay == 120.0
+
+
+class TestSettingsInjection:
+    """Tests for injectable settings."""
+
+    def test_get_settings_returns_settings(self) -> None:
+        """Test that get_settings returns a Settings instance."""
+        from reflex.config import Settings, get_settings
+
+        settings = get_settings()
+        assert isinstance(settings, Settings)
+
+    def test_configure_settings_overrides(self) -> None:
+        """Test that configure_settings allows custom settings."""
+        from reflex.config import Settings, configure_settings, get_settings
+
+        # Create custom settings
+        custom = Settings(environment="test", version="test-version")
+        configure_settings(custom)
+
+        try:
+            settings = get_settings()
+            assert settings.environment == "test"
+            assert settings.version == "test-version"
+        finally:
+            # Reset to default
+            configure_settings(None)
+
+    def test_configure_settings_reset(self) -> None:
+        """Test that configure_settings(None) resets to default."""
+        from reflex.config import Settings, configure_settings, get_settings
+
+        # Set custom
+        custom = Settings(environment="custom")
+        configure_settings(custom)
+
+        # Reset
+        configure_settings(None)
+
+        # Should create new default
+        settings = get_settings()
+        assert settings is not custom

@@ -22,9 +22,9 @@ import httpx
 from fastapi import FastAPI
 from slowapi.errors import RateLimitExceeded
 
-from reflex.api.rate_limiting import limiter, rate_limit_exceeded_handler
+from reflex.api.rate_limiting import create_limiter, rate_limit_exceeded_handler
 from reflex.api.routes import events, health, ws
-from reflex.config import settings
+from reflex.config import get_settings
 from reflex.infra.database import SessionFactory, create_raw_pool, engine
 from reflex.infra.locks import ScopedLocks, create_lock_backend
 from reflex.infra.observability import configure_observability, instrument_app
@@ -57,6 +57,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     Yields:
         Nothing - just manages lifecycle
     """
+    settings = get_settings()
     logger.info("Starting application...")
 
     # 1. Configure observability
@@ -169,6 +170,8 @@ def create_app() -> FastAPI:
     Returns:
         Configured FastAPI application
     """
+    settings = get_settings()
+
     app = FastAPI(
         title="Reflex",
         description="Real-time AI Agent Event Processing System",
@@ -176,7 +179,8 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Add rate limiter
+    # Add rate limiter (created from settings)
+    limiter = create_limiter(settings)
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)  # type: ignore[arg-type]
 

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from reflex.api.deps import get_store
 from reflex.api.rate_limiting import limiter
-from reflex.config import settings
+from reflex.config import get_settings
 from reflex.core.events import Event  # noqa: TC001 - FastAPI needs this at runtime
 from reflex.infra.store import EventStore
 
@@ -43,6 +43,12 @@ class DLQRetryResponse(BaseModel):
     event_id: str = Field(description="The retried event ID")
 
 
+def _get_rate_limit() -> str:
+    """Get rate limit string from settings."""
+    settings = get_settings()
+    return f"{settings.rate_limit_requests}/{settings.rate_limit_window}second"
+
+
 @router.post(
     "",
     response_model=PublishResponse,
@@ -55,7 +61,7 @@ class DLQRetryResponse(BaseModel):
         429: {"description": "Rate limit exceeded"},
     },
 )
-@limiter.limit(lambda: f"{settings.rate_limit_requests}/{settings.rate_limit_window}second")  # pyright: ignore[reportUntypedFunctionDecorator]
+@limiter.limit(_get_rate_limit)  # pyright: ignore[reportUntypedFunctionDecorator]
 async def publish_event(
     request: Request,  # Required for rate limiter
     event: Event,
