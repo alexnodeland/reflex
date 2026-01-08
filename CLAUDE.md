@@ -86,3 +86,57 @@ Integration tests require `DATABASE_URL` and use real fixtures (`store`, `real_d
 - Line length: 100 characters
 - Use `from __future__ import annotations` for forward references
 - Place runtime-only imports in `if TYPE_CHECKING:` blocks to avoid circular imports
+
+## Claude Code Configuration
+
+The `.claude/` directory contains commands, skills, and hooks that must stay in sync with the codebase:
+
+```
+.claude/
+├── settings.json           # Hook configuration
+├── hooks/
+│   └── lint-format.sh      # Stop hook for auto-formatting
+├── commands/               # Slash commands (/command-name)
+│   ├── new-event.md        # Scaffold new event type
+│   ├── new-agent.md        # Scaffold new agent
+│   ├── new-filter.md       # Scaffold custom filter
+│   ├── new-trigger.md      # Scaffold trigger
+│   ├── check.md            # Run CI pipeline
+│   ├── fix.md              # Auto-fix lint/format
+│   ├── test.md             # Run tests
+│   ├── api-test.md         # Run Bruno collection
+│   ├── health.md           # Check system health
+│   ├── dlq.md              # Inspect dead-letter queue
+│   ├── replay.md           # Replay event
+│   └── trace.md            # Trace event flow
+└── skills/                 # Auto-applied contextual knowledge
+    ├── reflex-events/      # Event system patterns
+    ├── reflex-agents/      # Agent, filter, trigger patterns
+    ├── reflex-database/    # PostgreSQL, EventStore, migrations
+    └── reflex-testing/     # Test fixtures and patterns
+```
+
+**Important**: When modifying core patterns (events, agents, filters, triggers, testing), update the corresponding commands and skills to maintain parity. This ensures scaffolding commands generate correct code and skills provide accurate guidance.
+
+## Documentation
+
+The `docs/` directory contains user-facing documentation that must stay in sync with the codebase:
+
+```
+docs/
+├── index.md              # Overview and quick start
+├── getting-started.md    # Setup and first steps
+├── architecture.md       # System design and event flow
+├── extending.md          # Custom events, agents, and filters
+├── configuration.md      # Environment variables
+├── development.md        # Commands and testing
+├── scaling.md            # Horizontal scaling
+└── operations.md         # DLQ and observability
+```
+
+**Important**: When modifying APIs, configuration options, or architectural patterns, update the corresponding documentation. Key mappings:
+- Event/agent/filter changes → `extending.md`
+- Environment variables → `configuration.md`
+- Make targets or dev workflow → `development.md`
+- EventStore or database changes → `architecture.md`, `scaling.md`
+- DLQ or observability → `operations.md`
