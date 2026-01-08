@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/scripts/lint-format.sh"
+            "command": ".claude/hooks/lint-format.sh"
           }
         ]
       }
