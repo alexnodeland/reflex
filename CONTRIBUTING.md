@@ -15,7 +15,7 @@ Thank you for your interest in contributing to Reflex! This document provides gu
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourorg/reflex.git
+   git clone https://github.com/alexnodeland/reflex.git
    cd reflex
    ```
 

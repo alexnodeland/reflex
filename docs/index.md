@@ -39,7 +39,7 @@ flowchart LR
 ## Quick Start
 
 ```bash
-git clone https://github.com/yourorg/reflex my-agent
+git clone https://github.com/alexnodeland/reflex my-agent
 cd my-agent
 cp .env.example .env
 docker compose up
