@@ -2,6 +2,14 @@
 
 This guide covers how to extend Reflex with custom components.
 
+```mermaid
+flowchart LR
+    Event["Event"] --> Filter["Filter"]
+    Filter -->|matches| Trigger["Trigger"]
+    Trigger --> Agent["Agent"]
+    Agent -->|ack/nack| Store["EventStore"]
+```
+
 ## Table of Contents
 
 - [Custom Event Types](#custom-event-types)
@@ -158,7 +166,19 @@ async def get_customer_history(ctx: RunContext[ReflexDeps], customer_id: str) ->
 
 ## Custom Filters
 
-Filters determine which events trigger which agents.
+Filters determine which events trigger which agents. Filters can be composed using logical operators.
+
+```mermaid
+flowchart LR
+    E["Event"] --> TF["type_filter()"]
+    E --> SF["source_filter()"]
+    E --> PF["PriorityFilter"]
+    TF --> AND["& (AND)"]
+    SF --> AND
+    AND --> OR["| (OR)"]
+    PF --> OR
+    OR --> Result["Match Result"]
+```
 
 ### Creating a Class-Based Filter
 

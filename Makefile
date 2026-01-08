@@ -1,4 +1,4 @@
-.PHONY: dev test lint type-check format clean logs shell ci
+.PHONY: dev test lint type-check format clean logs shell ci docs docs-build docs-deploy
 
 # CI - Emulate GitHub Actions pipeline locally
 ci:
@@ -68,10 +68,21 @@ replay:
 dlq:
 	docker compose run --rm app python scripts/dlq.py
 
+# Documentation
+docs:
+	uv run --extra docs mkdocs serve
+
+docs-build:
+	uv run --extra docs mkdocs build
+
+docs-deploy:
+	uv run --extra docs mkdocs gh-deploy --force
+
 # Cleanup
 clean:
 	docker compose down -v
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type d -name .pytest_cache -exec rm -rf {} +
 	find . -type d -name .ruff_cache -exec rm -rf {} +
+	find . -type d -name site -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete

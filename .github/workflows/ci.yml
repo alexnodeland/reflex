@@ -114,3 +114,20 @@ jobs:
           tags: reflex:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  docs:
+    name: Build Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install mkdocs-material mkdocs-minify-plugin
+
+      - name: Build docs
+        run: mkdocs build --strict
