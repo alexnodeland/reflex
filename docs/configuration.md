@@ -7,12 +7,45 @@ Reflex is configured via environment variables. Copy `.env.example` to `.env` to
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `OPENAI_API_KEY` | OpenAI API key for PydanticAI agent |
+| Provider API Key | API key for your chosen AI provider (see below) |
 
 !!! example "Database URL Format"
     ```
     postgresql://user:password@localhost:5432/reflex
     ```
+
+## AI Model Configuration
+
+Reflex uses [PydanticAI](https://ai.pydantic.dev/) for LLM integration. Configure your preferred model provider:
+
+### Model Selection
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DEFAULT_MODEL` | `anthropic:claude-sonnet-4-5-20250514` | Model in PydanticAI format |
+
+The model format is `provider:model-name`. Supported providers and examples:
+
+| Provider | Example Model | API Key Variable |
+|----------|---------------|------------------|
+| Anthropic | `anthropic:claude-sonnet-4-5-20250514` | `ANTHROPIC_API_KEY` |
+| OpenAI | `openai:gpt-4o` | `OPENAI_API_KEY` |
+| Google | `google-gla:gemini-2.0-flash` | `GOOGLE_API_KEY` |
+| Groq | `groq:llama-3.3-70b-versatile` | `GROQ_API_KEY` |
+
+### Provider API Keys
+
+Set the API key for your chosen provider:
+
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | Anthropic API key (default provider) |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `GOOGLE_API_KEY` | Google AI API key |
+| `GROQ_API_KEY` | Groq API key |
+
+!!! tip "Only One Key Required"
+    You only need to set the API key for the provider specified in `DEFAULT_MODEL`.
 
 ## Optional Variables
 
@@ -39,10 +72,22 @@ Reflex is configured via environment variables. Copy `.env.example` to `.env` to
 
 ## Example Configuration
 
-=== "Development"
+=== "Development (Anthropic)"
 
     ```bash title=".env"
     DATABASE_URL=postgresql://reflex:reflex@localhost:5432/reflex
+    ANTHROPIC_API_KEY=sk-ant-...
+
+    # Lower retry delays for faster iteration
+    EVENT_MAX_ATTEMPTS=2
+    EVENT_RETRY_BASE_DELAY=0.5
+    ```
+
+=== "Development (OpenAI)"
+
+    ```bash title=".env"
+    DATABASE_URL=postgresql://reflex:reflex@localhost:5432/reflex
+    DEFAULT_MODEL=openai:gpt-4o
     OPENAI_API_KEY=sk-...
 
     # Lower retry delays for faster iteration
@@ -54,7 +99,7 @@ Reflex is configured via environment variables. Copy `.env.example` to `.env` to
 
     ```bash title=".env"
     DATABASE_URL=postgresql://reflex:${DB_PASSWORD}@db.example.com:5432/reflex
-    OPENAI_API_KEY=sk-...
+    ANTHROPIC_API_KEY=sk-ant-...
     LOGFIRE_TOKEN=...
 
     # Higher pool size for load
