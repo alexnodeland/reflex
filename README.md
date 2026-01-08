@@ -1,4 +1,10 @@
+<div align="center">
+
 # Reflex
+
+**Event-Driven AI Agent Framework**
+
+Build real-time AI agents that react to events, maintain state, and scale horizontally.
 
 [![CI](https://github.com/alexnodeland/reflex/actions/workflows/ci.yml/badge.svg)](https://github.com/alexnodeland/reflex/actions/workflows/ci.yml)
 [![Docs](https://github.com/alexnodeland/reflex/actions/workflows/docs.yml/badge.svg)](https://alexnodeland.github.io/reflex)
@@ -6,37 +12,147 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-Real-time AI Agent Template Project
+[Documentation](https://alexnodeland.github.io/reflex) · [Getting Started](docs/getting-started.md) · [Examples](examples/)
+
+</div>
+
+---
+
+## Why Reflex?
+
+Traditional chatbots are request/response systems. Reflex agents are **continuous control systems** that:
+
+| Traditional Chatbot | Reflex Agent |
+|---------------------|--------------|
+| Responds to single requests | Reacts to streams of events |
+| Stateless between calls | Persistent state across interactions |
+| Single input source | Multiple sources (WebSocket, HTTP, timers) |
+| Manual retry handling | Automatic retry with exponential backoff |
+| Scale by replication | Scale with concurrent consumers |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Sources
+        WS["WebSocket"]
+        HTTP["HTTP"]
+        Timer["Timer"]
+    end
+
+    subgraph Reflex
+        Store[("PostgreSQL<br/>EventStore")]
+        Agent["PydanticAI<br/>Agent"]
+    end
+
+    subgraph Outputs
+        Response["Responses"]
+        Actions["Actions"]
+    end
+
+    Sources --> Store
+    Store --> Agent
+    Agent --> Response
+    Agent --> Actions
+    Agent -->|"publish"| Store
+```
+
+Events flow through PostgreSQL LISTEN/NOTIFY for real-time pub/sub. Failed events retry with exponential backoff. Exceeded retries go to a dead-letter queue for manual inspection.
 
 ## Quick Start
 
 ```bash
-# Clone and setup
+# Clone and configure
 git clone https://github.com/alexnodeland/reflex my-agent
 cd my-agent
 cp .env.example .env
 
-# Start everything
+# Start everything (includes PostgreSQL)
 docker compose up
 ```
 
-Your agent is running at:
-- **API**: http://localhost:8000
-- **WebSocket**: ws://localhost:8000/ws
-- **Health**: http://localhost:8000/health
+**Endpoints:**
 
-## What is Reflex?
+| Service | URL |
+|---------|-----|
+| API | http://localhost:8000 |
+| WebSocket | ws://localhost:8000/ws |
+| Health | http://localhost:8000/health |
+| Docs | http://localhost:8000/docs |
 
-Reflex is a production-ready template for building real-time AI agents as continuous control systems. Unlike request/response chatbots, Reflex agents:
+**Send your first event:**
 
-- **React to events** from multiple sources (WebSocket, HTTP, timers)
-- **Maintain state** across interactions with persistent event storage
-- **Observe everything** with built-in tracing via Logfire
-- **Scale horizontally** with concurrent consumer support
+```bash
+# Via HTTP
+curl -X POST http://localhost:8000/events \
+  -H "Content-Type: application/json" \
+  -d '{"type": "http", "payload": {"message": "Hello, Reflex!"}}'
+
+# Or connect via WebSocket
+websocat ws://localhost:8000/ws
+```
+
+## Features
+
+### Event-Driven Processing
+
+Define custom events with automatic registration:
+
+```python
+from reflex.core.events import EventRegistry, BaseEvent
+
+@EventRegistry.register
+class OrderEvent(BaseEvent):
+    type: Literal["order.created"] = "order.created"
+    order_id: str
+    amount: float
+```
+
+### Composable Filters
+
+Match events with chainable filter logic:
+
+```python
+from reflex.agent.filters import type_filter, keyword_filter
+
+# Combine filters with & (and), | (or), ~ (not)
+important_orders = (
+    type_filter("order.created")
+    & keyword_filter("amount", lambda x: x > 100)
+)
+```
+
+### Trigger-Based Routing
+
+Connect filters to agents declaratively:
+
+```python
+from reflex.agent.triggers import Trigger
+
+Trigger(
+    name="high-value-orders",
+    filter=important_orders,
+    agent=order_processor_agent,
+)
+```
+
+### Built-in Observability
+
+Integrated tracing via [Logfire](https://pydantic.dev/logfire) for full visibility into event flow, agent execution, and tool calls.
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Framework | [FastAPI](https://fastapi.tiangolo.com/) |
+| AI Agent | [PydanticAI](https://ai.pydantic.dev/) |
+| Database | [PostgreSQL](https://www.postgresql.org/) |
+| Pub/Sub | PostgreSQL LISTEN/NOTIFY |
+| Observability | [Logfire](https://pydantic.dev/logfire) |
+| Type Checking | [Pyright](https://github.com/microsoft/pyright) |
+| Linting | [Ruff](https://github.com/astral-sh/ruff) |
 
 ## Documentation
-
-📖 **[View the full documentation](https://alexnodeland.github.io/reflex)**
 
 | Guide | Description |
 |-------|-------------|
@@ -52,9 +168,21 @@ Reflex is a production-ready template for building real-time AI agents as contin
 
 ```bash
 make dev          # Start with hot reload
-make test         # Run tests
-make lint         # Check code
+make test         # Run tests in Docker
+make lint         # Check code quality
+make type-check   # Run pyright
+make ci           # Full CI pipeline locally
 make docs         # Serve docs locally
+```
+
+## Project Structure
+
+```
+src/reflex/
+├── infra/     # Infrastructure (EventStore, database) - keep stable
+├── core/      # Core types (events, deps, errors) - extend carefully
+├── agent/     # Agent logic (triggers, filters) - primary extension point
+└── api/       # FastAPI routes and WebSocket handlers
 ```
 
 ## Contributing
