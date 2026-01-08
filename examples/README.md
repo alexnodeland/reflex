@@ -9,6 +9,9 @@ This directory contains example applications demonstrating Reflex's capabilities
 | [Basic](./basic/) | Error monitoring with threshold alerts | Events, triggers, simple agents |
 | [Support Bot](./support_bot/) | AI-powered customer support | WebSocket, LLM agents, escalation |
 | [Content Moderation](./content_moderation/) | Real-time content filtering | Rate limiting, deduplication, LLM classification |
+| [Log Anomaly](./log_anomaly/) | Multi-service log aggregation | Threshold triggers, LLM correlation |
+| [Fraud Detection](./fraud_detection/) | E-commerce order fraud prevention | Scoped locking, LLM tools, event lineage |
+| [Incident Response](./incident_response/) | PagerDuty-like incident management | Full lifecycle, escalation chains, runbooks |
 
 ## Quick Comparison
 
@@ -52,6 +55,47 @@ Features demonstrated:
 - Graduated enforcement (warn → remove → ban)
 - Periodic summary triggers for reporting
 
+### Log Anomaly Example
+**Best for**: DevOps and observability
+
+```
+Service Logs → Dedupe → Error Tracking → Threshold → LLM Root Cause
+```
+
+Features demonstrated:
+- Multi-service log aggregation
+- Source-based filtering
+- Threshold-based anomaly detection
+- LLM-powered root cause analysis
+- Periodic summaries
+
+### Fraud Detection Example
+**Best for**: E-commerce and fintech
+
+```
+Order → Fraud Agent (scoped per user) → Approve/Hold/Reject
+```
+
+Features demonstrated:
+- Scoped locking (serialize per user)
+- LLM with investigation tools
+- Event lineage for audit trails
+- Graduated response based on risk score
+
+### Incident Response Example
+**Best for**: SRE and operations
+
+```
+Alert → Triage → Incident → Escalation → Resolution → Postmortem
+```
+
+Features demonstrated:
+- Full incident lifecycle management
+- AI-powered severity classification
+- Escalation chain with multiple levels
+- Runbook matching and auto-remediation
+- Postmortem automation for high-severity incidents
+
 ## Running Examples
 
 ### Prerequisites
@@ -67,7 +111,7 @@ docker-compose up -d
 alembic upgrade head
 
 # Set API keys (choose based on example)
-export ANTHROPIC_API_KEY="your-key"  # For support_bot, content_moderation
+export ANTHROPIC_API_KEY="your-key"  # For most examples
 export OPENAI_API_KEY="your-key"     # For basic example
 ```
 
@@ -82,6 +126,15 @@ python -m examples.support_bot.main
 
 # Content moderation
 python -m examples.content_moderation.main
+
+# Log anomaly detection
+python -m examples.log_anomaly.main
+
+# Fraud detection
+python -m examples.fraud_detection.main
+
+# Incident response
+python -m examples.incident_response.main
 ```
 
 ### Run Full System
