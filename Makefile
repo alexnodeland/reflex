@@ -4,13 +4,13 @@
 ci:
 	@echo "=== Running CI Pipeline ==="
 	@echo "\n--- Lint Check ---"
-	python -m ruff check src tests
+	uv run ruff check src tests
 	@echo "\n--- Format Check ---"
-	python -m ruff format --check src tests
+	uv run ruff format --check src tests
 	@echo "\n--- Type Check ---"
-	python -m pyright src
+	uv run pyright src
 	@echo "\n--- Tests ---"
-	python -m pytest -v
+	uv run pytest -v
 	@echo "\n=== CI Pipeline Complete ==="
 
 # Development
@@ -41,16 +41,16 @@ test-cov:
 
 # Code quality
 lint:
-	ruff check src tests
+	uv run ruff check src tests
 
 lint-fix:
-	ruff check --fix src tests
+	uv run ruff check --fix src tests
 
 format:
-	ruff format src tests
+	uv run ruff format src tests
 
 type-check:
-	pyright src
+	uv run pyright src
 
 check: lint type-check test
 
