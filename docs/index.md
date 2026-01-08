@@ -4,6 +4,31 @@
 
 Reflex is a production-ready template for building real-time AI agents as continuous control systems. Unlike request/response chatbots, Reflex agents run as persistent processes that react to events from multiple sources.
 
+```mermaid
+flowchart LR
+    subgraph Sources
+        WS["WebSocket"]
+        HTTP["HTTP"]
+        Timer["Timer"]
+    end
+
+    subgraph Reflex
+        Store[("EventStore")]
+        Agent["AI Agent"]
+    end
+
+    subgraph Outputs
+        Response["Response"]
+        Actions["Actions"]
+    end
+
+    Sources --> Store
+    Store --> Agent
+    Agent --> Response
+    Agent --> Actions
+    Agent -->|publish| Store
+```
+
 ## Features
 
 - **Event-driven** - React to WebSocket, HTTP, and timer events

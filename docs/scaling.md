@@ -15,6 +15,26 @@ The default implementation uses PostgreSQL's LISTEN/NOTIFY for real-time event d
 
 The design supports multiple concurrent consumers out of the box:
 
+```mermaid
+flowchart LR
+    LB["Load Balancer"]
+
+    subgraph Instances
+        A1["Agent 1"]
+        A2["Agent 2"]
+        A3["Agent 3"]
+    end
+
+    PG[("PostgreSQL")]
+
+    LB --> A1
+    LB --> A2
+    LB --> A3
+    A1 --> PG
+    A2 --> PG
+    A3 --> PG
+```
+
 ```yaml title="docker-compose.yml"
 services:
   agent:

@@ -52,7 +52,11 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - admonition
@@ -65,6 +69,11 @@ plugins:
   - search
   - minify:
       minify_html: true
+
+extra_javascript:
+  - https://unpkg.com/mermaid@11/dist/mermaid.min.js
+  - https://unpkg.com/@mermaid-js/layout-elk@0.1/dist/mermaid-layout-elk.min.js
+  - javascripts/mermaid.js
 
 extra:
   social:

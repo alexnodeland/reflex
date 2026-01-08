@@ -4,32 +4,30 @@ Reflex is an event-driven AI agent framework using PostgreSQL LISTEN/NOTIFY for 
 
 ## System Overview
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         FastAPI Server                          │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐ │
-│  │WebSocket │  │   HTTP   │  │  Health  │  │   Agent Loop     │ │
-│  │ Handler  │  │ Endpoints│  │  Checks  │  │   (Background)   │ │
-│  └────┬─────┘  └────┬─────┘  └──────────┘  └────────┬─────────┘ │
-└───────┼─────────────┼───────────────────────────────┼───────────┘
-        │             │                               │
-        v             v                               v
-┌─────────────────────────────────────────────────────────────────┐
-│                        EventStore                               │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   publish() │  │ subscribe() │  │  ack() / nack()         │  │
-│  │             │  │  (LISTEN/   │  │  (exponential backoff)  │  │
-│  │             │  │   NOTIFY)   │  │                         │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-                            v
-┌─────────────────────────────────────────────────────────────────┐
-│                       PostgreSQL                                │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  events table (id, type, payload, status, attempts...)  │    │
-│  └─────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Server["FastAPI Server"]
+        WS["WebSocket Handler"]
+        HTTP["HTTP Endpoints"]
+        Health["Health Checks"]
+        Loop["Agent Loop (Background)"]
+    end
+
+    subgraph Store["EventStore"]
+        Publish["publish()"]
+        Subscribe["subscribe() via LISTEN/NOTIFY"]
+        Ack["ack() / nack() with exponential backoff"]
+    end
+
+    subgraph DB["PostgreSQL"]
+        Events[("events table: id, type, payload, status, attempts")]
+    end
+
+    WS --> Publish
+    HTTP --> Publish
+    Loop --> Subscribe
+    Loop --> Ack
+    Store --> DB
 ```
 
 ## Event Flow
@@ -111,10 +109,16 @@ sequenceDiagram
 
 Events progress through these states:
 
-```
-pending → processing → completed
-                   ↘ failed (retry) → pending
-                                   ↘ dead_letter (max retries)
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    pending --> processing: claim event
+    processing --> completed: ack()
+    processing --> failed: nack()
+    failed --> pending: retry
+    failed --> dead_letter: max retries exceeded
+    completed --> [*]
+    dead_letter --> pending: manual retry
 ```
 
 | State | Description |
