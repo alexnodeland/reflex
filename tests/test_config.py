@@ -25,7 +25,7 @@ class TestSettings:
         assert settings.api_port == 8000
         assert settings.api_reload is False
         assert settings.log_level == "INFO"
-        assert settings.default_model == "openai:gpt-4o-mini"
+        assert settings.default_model == "anthropic:claude-sonnet-4-5-20250514"
         assert settings.event_max_attempts == 3
         assert settings.event_retry_base_delay == 1.0
         assert settings.event_retry_max_delay == 60.0
@@ -55,7 +55,10 @@ class TestSettings:
         settings = Settings()
 
         assert settings.logfire_token is None
+        assert settings.anthropic_api_key is None
         assert settings.openai_api_key is None
+        assert settings.google_api_key is None
+        assert settings.groq_api_key is None
 
     def test_singleton_import(self) -> None:
         """Test that settings singleton is importable."""
