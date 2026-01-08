@@ -36,9 +36,20 @@ class Settings(BaseSettings):
     logfire_token: str | None = None
     log_level: str = "INFO"
 
-    # Agent
+    # AI Model Configuration
+    # Default model uses PydanticAI format: "provider:model-name"
+    # Examples:
+    #   - anthropic:claude-sonnet-4-5-20250514 (default)
+    #   - openai:gpt-4o
+    #   - google-gla:gemini-2.0-flash
+    #   - groq:llama-3.3-70b-versatile
+    default_model: str = "anthropic:claude-sonnet-4-5-20250514"
+
+    # Provider API Keys - set the key for your chosen provider
+    anthropic_api_key: str | None = None
     openai_api_key: str | None = None
-    default_model: str = "openai:gpt-4o-mini"
+    google_api_key: str | None = None
+    groq_api_key: str | None = None
 
     # Event processing
     event_max_attempts: int = 3
