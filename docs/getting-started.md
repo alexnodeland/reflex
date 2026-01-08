@@ -14,7 +14,7 @@ Get Reflex running in minutes.
 
     ```bash
     # Clone and setup
-    git clone https://github.com/yourorg/reflex my-agent
+    git clone https://github.com/alexnodeland/reflex my-agent
     cd my-agent
     cp .env.example .env
 
@@ -29,7 +29,7 @@ Get Reflex running in minutes.
 
     ```bash
     # Clone and setup
-    git clone https://github.com/yourorg/reflex my-agent
+    git clone https://github.com/alexnodeland/reflex my-agent
     cd my-agent
     cp .env.example .env
 
@@ -104,7 +104,7 @@ When you start Reflex, you get:
 
 ## Next Steps
 
-1. Explore the [example agent](https://github.com/yourorg/reflex/tree/main/examples/basic)
+1. Explore the [example agent](https://github.com/alexnodeland/reflex/tree/main/examples/basic)
 2. Understand the [architecture](architecture.md)
 3. Learn how to [extend Reflex](extending.md) with your own events and agents
 4. Review [configuration options](configuration.md)

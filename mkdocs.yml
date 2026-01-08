@@ -1,8 +1,8 @@
 site_name: Reflex
 site_description: Real-time AI Agent Framework
-site_url: https://yourorg.github.io/reflex
-repo_url: https://github.com/yourorg/reflex
-repo_name: yourorg/reflex
+site_url: https://alexnodeland.github.io/reflex/
+repo_url: https://github.com/alexnodeland/reflex
+repo_name: alexnodeland/reflex
 
 theme:
   name: material
@@ -78,4 +78,4 @@ extra_javascript:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/yourorg/reflex
+      link: https://github.com/alexnodeland/reflex
