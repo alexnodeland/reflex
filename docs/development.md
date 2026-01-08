@@ -2,7 +2,7 @@
 
 Commands and workflows for developing with Reflex.
 
-## Development Commands
+## 🛠️ Development Commands
 
 === "Docker"
 
@@ -28,7 +28,7 @@ Commands and workflows for developing with Reflex.
     make demo
     ```
 
-## Testing
+## 🧪 Testing
 
 ```bash
 make test         # Run all tests in Docker
@@ -84,7 +84,7 @@ async def test_integration(store, real_deps):
     pass
 ```
 
-## Code Quality
+## ✅ Code Quality
 
 ```bash
 make lint         # ruff check
@@ -103,7 +103,7 @@ The `make ci` command runs the same checks as GitHub Actions:
 3. Type check (`pyright`)
 4. Tests (`pytest`)
 
-## Code Style
+## 📝 Code Style
 
 !!! note "Style Guidelines"
 
@@ -124,7 +124,7 @@ if TYPE_CHECKING:
     from reflex.core.deps import ReflexDeps
 ```
 
-## Documentation
+## 📚 Documentation
 
 ```bash
 make docs         # Serve docs locally at http://localhost:8000

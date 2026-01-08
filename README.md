@@ -18,7 +18,7 @@ Build real-time AI agents that react to events, maintain state, and scale horizo
 
 ---
 
-## Why Reflex?
+## ⚡ Why Reflex?
 
 Traditional chatbots are request/response systems. Reflex agents are **continuous control systems** that:
 
@@ -30,7 +30,7 @@ Traditional chatbots are request/response systems. Reflex agents are **continuou
 | Manual retry handling | Automatic retry with exponential backoff |
 | Scale by replication | Scale with concurrent consumers |
 
-## Architecture
+## 🏗️ Architecture
 
 ```mermaid
 flowchart LR
@@ -59,7 +59,7 @@ flowchart LR
 
 Events flow through PostgreSQL LISTEN/NOTIFY for real-time pub/sub. Failed events retry with exponential backoff. Exceeded retries go to a dead-letter queue for manual inspection.
 
-## Installation
+## 📦 Installation
 
 Choose the method that fits your use case:
 
@@ -92,7 +92,7 @@ git clone https://github.com/alexnodeland/reflex my-agent
 cd my-agent
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # Configure environment
@@ -124,7 +124,7 @@ curl -X POST http://localhost:8000/events \
 websocat ws://localhost:8000/ws
 ```
 
-## Features
+## ✨ Features
 
 ### Event-Driven Processing
 
@@ -172,7 +172,7 @@ Trigger(
 
 Integrated tracing via [Logfire](https://pydantic.dev/logfire) for full visibility into event flow, agent execution, and tool calls.
 
-## Tech Stack
+## 🔧 Tech Stack
 
 | Component | Technology |
 |-----------|------------|
@@ -184,7 +184,7 @@ Integrated tracing via [Logfire](https://pydantic.dev/logfire) for full visibili
 | Type Checking | [Pyright](https://github.com/microsoft/pyright) |
 | Linting | [Ruff](https://github.com/astral-sh/ruff) |
 
-## Documentation
+## 📚 Documentation
 
 | Guide | Description |
 |-------|-------------|
@@ -196,7 +196,7 @@ Integrated tracing via [Logfire](https://pydantic.dev/logfire) for full visibili
 | [Scaling](docs/scaling.md) | Horizontal scaling |
 | [Operations](docs/operations.md) | DLQ and observability |
 
-## Development
+## 🛠️ Development
 
 ```bash
 make dev          # Start with hot reload
@@ -207,7 +207,7 @@ make ci           # Full CI pipeline locally
 make docs         # Serve docs locally
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/reflex/
@@ -217,10 +217,10 @@ src/reflex/
 └── api/       # FastAPI routes and WebSocket handlers
 ```
 
-## Contributing
+## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
-## License
+## 📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.

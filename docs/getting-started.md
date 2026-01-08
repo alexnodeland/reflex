@@ -2,13 +2,13 @@
 
 Get Reflex running in minutes.
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Docker and Docker Compose
 - OpenAI API key (for AI agents)
 - Optional: Logfire token (for observability)
 
-## Quick Start
+## 🚀 Quick Start
 
 === "Docker (Recommended)"
 
@@ -44,7 +44,7 @@ Get Reflex running in minutes.
     uv run uvicorn reflex.api.app:app --reload
     ```
 
-## Verify Installation
+## ✅ Verify Installation
 
 Once running, your agent is available at:
 
@@ -67,7 +67,7 @@ Expected response:
 {"status": "healthy"}
 ```
 
-## What's Running
+## ⚙️ What's Running
 
 When you start Reflex, you get:
 
@@ -75,7 +75,7 @@ When you start Reflex, you get:
 2. **PostgreSQL** - Stores events and provides pub/sub via LISTEN/NOTIFY
 3. **Agent Loop** - Background task that processes events
 
-## Send Your First Event
+## 📤 Send Your First Event
 
 === "WebSocket"
 
@@ -102,7 +102,7 @@ When you start Reflex, you get:
       -d '{"type": "http", "source": "test", "content": "Hello!"}'
     ```
 
-## Next Steps
+## 🎯 Next Steps
 
 1. Explore the [example agent](https://github.com/alexnodeland/reflex/tree/main/examples/basic)
 2. Understand the [architecture](architecture.md)

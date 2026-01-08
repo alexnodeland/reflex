@@ -2,7 +2,7 @@
 
 Strategies for scaling Reflex beyond single-instance deployments.
 
-## Current Architecture
+## 🏗️ Current Architecture
 
 The default implementation uses PostgreSQL's LISTEN/NOTIFY for real-time event delivery.
 
@@ -11,7 +11,7 @@ The default implementation uses PostgreSQL's LISTEN/NOTIFY for real-time event d
     - Moderate throughput (thousands of events/second)
     - Teams wanting minimal infrastructure
 
-## Horizontal Scaling
+## 📈 Horizontal Scaling
 
 The design supports multiple concurrent consumers out of the box:
 
@@ -50,7 +50,7 @@ Events are claimed with `FOR UPDATE SKIP LOCKED`, preventing duplicate processin
     LOCK_BACKEND=postgres
     ```
 
-## Scaling Beyond PostgreSQL
+## 🚀 Scaling Beyond PostgreSQL
 
 For higher scale requirements, the EventStore interface is designed to be swappable.
 
@@ -83,7 +83,7 @@ class RedisEventStore:
 3. Swap implementation in dependency injection
 4. PostgreSQL remains for event history/replay
 
-## Scaling Checklist
+## ✅ Scaling Checklist
 
 === "Single Instance"
 
@@ -105,7 +105,7 @@ class RedisEventStore:
     - [x] Add caching layer for hot data
     - [x] Consider event batching
 
-## Pool Sizing
+## ⚙️ Pool Sizing
 
 Configure connection pool based on instance count:
 
