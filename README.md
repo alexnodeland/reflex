@@ -59,13 +59,45 @@ flowchart LR
 
 Events flow through PostgreSQL LISTEN/NOTIFY for real-time pub/sub. Failed events retry with exponential backoff. Exceeded retries go to a dead-letter queue for manual inspection.
 
+## Installation
+
+Choose the method that fits your use case:
+
+### Option 1: Copier (Recommended)
+
+Create a customized project with [Copier](https://copier.readthedocs.io/). This lets you name your package, exclude examples/docs, and receive upstream updates.
+
+```bash
+# Install copier
+pipx install copier
+
+# Create your project
+copier copy gh:alexnodeland/reflex my-agent
+
+# Later, pull upstream updates
+cd my-agent
+copier update
+```
+
+### Option 2: GitHub Template
+
+Click **"Use this template"** on GitHub to create a new repository with the full codebase.
+
+### Option 3: Git Clone
+
+For exploring or contributing:
+
+```bash
+git clone https://github.com/alexnodeland/reflex my-agent
+cd my-agent
+```
+
 ## Quick Start
 
 ```bash
-# Clone and configure
-git clone https://github.com/alexnodeland/reflex my-agent
-cd my-agent
+# Configure environment
 cp .env.example .env
+# Edit .env with your API keys
 
 # Start everything (includes PostgreSQL)
 docker compose up
