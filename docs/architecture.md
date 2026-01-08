@@ -2,7 +2,7 @@
 
 Reflex is an event-driven AI agent framework using PostgreSQL LISTEN/NOTIFY for real-time pub/sub.
 
-## System Overview
+## 🔍 System Overview
 
 ```mermaid
 flowchart TB
@@ -30,7 +30,7 @@ flowchart TB
     Store --> DB
 ```
 
-## Event Flow
+## 🔄 Event Flow
 
 ```mermaid
 sequenceDiagram
@@ -55,7 +55,7 @@ sequenceDiagram
 4. **Execution** - PydanticAI agent processes with tools
 5. **Completion** - Events are ack'd (completed) or nack'd (retry with backoff)
 
-## Key Components
+## 🧩 Key Components
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
@@ -69,7 +69,7 @@ sequenceDiagram
 | **API** | `src/reflex/api/app.py` | FastAPI with WebSocket support |
 | **Config** | `src/reflex/config.py` | Pydantic-settings configuration |
 
-## Module Organization
+## 📁 Module Organization
 
 !!! info "Extension Points"
 
@@ -105,7 +105,7 @@ sequenceDiagram
 
     - `app.py` - FastAPI application
 
-## Event States
+## 📊 Event States
 
 Events progress through these states:
 

@@ -2,7 +2,7 @@
 
 Reflex is configured via environment variables. Copy `.env.example` to `.env` to get started.
 
-## Required Variables
+## 🔑 Required Variables
 
 | Variable | Description |
 |----------|-------------|
@@ -14,7 +14,7 @@ Reflex is configured via environment variables. Copy `.env.example` to `.env` to
     postgresql://user:password@localhost:5432/reflex
     ```
 
-## AI Model Configuration
+## 🤖 AI Model Configuration
 
 Reflex uses [PydanticAI](https://ai.pydantic.dev/) for LLM integration. Configure your preferred model provider:
 
@@ -47,7 +47,7 @@ Set the API key for your chosen provider:
 !!! tip "Only One Key Required"
     You only need to set the API key for the provider specified in `DEFAULT_MODEL`.
 
-## Optional Variables
+## ⚙️ Optional Variables
 
 ### Observability
 
@@ -70,7 +70,7 @@ Set the API key for your chosen provider:
 | `EVENT_RETRY_BASE_DELAY` | `1.0` | Base delay (seconds) for exponential backoff |
 | `EVENT_RETRY_MAX_DELAY` | `60.0` | Maximum delay (seconds) for retry backoff |
 
-## Example Configuration
+## 📝 Example Configuration
 
 === "Development (Anthropic)"
 
@@ -115,7 +115,7 @@ Set the API key for your chosen provider:
     LOCK_BACKEND=postgres
     ```
 
-## Distributed Deployments
+## 🌐 Distributed Deployments
 
 For production deployments with multiple instances:
 

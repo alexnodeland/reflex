@@ -2,7 +2,7 @@
 
 An e-commerce fraud detection system with AI-powered risk analysis and user-scoped processing.
 
-## What This Example Demonstrates
+## ✨ What This Example Demonstrates
 
 1. **Scoped Locking**: Orders per user processed sequentially (prevents race conditions)
 2. **LLM Risk Analysis**: AI evaluates fraud signals with access to user history
@@ -10,34 +10,25 @@ An e-commerce fraud detection system with AI-powered risk analysis and user-scop
 4. **Event Lineage**: Full audit trail from order to decision
 5. **Graduated Response**: Approve, hold, reject, or challenge
 
-## Architecture
+## 🏗️ Architecture
 
-```
-Order Placed → OrderCreatedEvent
-                     │
-                     ▼
-              ┌──────────────┐
-              │ Fraud Agent  │ ← scope_key: user:{user_id}
-              │ (LLM + Tools)│   (serialized per user)
-              └──────┬───────┘
-                     │
-                     ▼
-            FraudCheckEvent
-                     │
-         ┌───────────┼───────────┬─────────────┐
-         ▼           ▼           ▼             ▼
-      APPROVE      HOLD       REJECT       CHALLENGE
-         │           │           │             │
-         ▼           ▼           ▼             ▼
-    Approved     HeldEvent   Rejected      HeldEvent
-      Event                    Event      (verify)
-                                 │
-                                 ▼
-                          UserFlaggedEvent
-                          (if high risk)
+```mermaid
+flowchart TB
+    OrderPlaced[Order Placed] --> OrderCreatedEvent
+    OrderCreatedEvent --> FraudAgent[Fraud Agent<br/>LLM + Tools<br/>scope: user_id]
+    FraudAgent --> FraudCheckEvent
+    FraudCheckEvent --> Approve[APPROVE]
+    FraudCheckEvent --> Hold[HOLD]
+    FraudCheckEvent --> Reject[REJECT]
+    FraudCheckEvent --> Challenge[CHALLENGE]
+    Approve --> ApprovedEvent[Approved Event]
+    Hold --> HeldEvent[Held Event]
+    Reject --> RejectedEvent[Rejected Event]
+    Challenge --> ChallengeHeld[Held Event<br/>verify]
+    RejectedEvent --> UserFlagged[UserFlaggedEvent<br/>if high risk]
 ```
 
-## Event Types
+## 📨 Event Types
 
 | Event | Description |
 |-------|-------------|
@@ -48,7 +39,7 @@ Order Placed → OrderCreatedEvent
 | `order.rejected` | Order rejected as fraudulent |
 | `user.flagged` | User added to watch list |
 
-## Fraud Signals
+## 🚨 Fraud Signals
 
 | Signal | Description | Risk Level |
 |--------|-------------|------------|
@@ -59,15 +50,15 @@ Order Placed → OrderCreatedEvent
 | `mismatched_info` | Shipping ≠ Billing | Medium |
 | `suspicious_items` | Gift cards, electronics | Medium |
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - PostgreSQL (or use Docker)
 - Anthropic API key (for Claude)
 
-### Setup
+### ⚙️ Setup
 
 ```bash
 # From the repository root
@@ -86,21 +77,21 @@ alembic upgrade head
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-### Run the Demo
+### ▶️ Run the Demo
 
 ```bash
 # Run the demo script
 python -m examples.fraud_detection.main
 ```
 
-### Start the Full System
+### 🌐 Start the Full System
 
 ```bash
 # Terminal 1: Start the API server
 uvicorn reflex.api.app:app --reload
 ```
 
-### Test Orders
+### 🧪 Test Orders
 
 ```bash
 # Low-risk order (trusted user)
@@ -142,7 +133,7 @@ curl -X POST http://localhost:8000/events \
   }'
 ```
 
-## Key Components
+## 🧩 Key Components
 
 ### Scoped Locking Per User
 
@@ -209,7 +200,7 @@ This enables full audit trail: Order → FraudCheck → Decision → UserFlag
 | 0.5 - 0.7 | Multiple | HOLD |
 | > 0.7 | Severe | REJECT |
 
-## Extending This Example
+## 🔧 Extending This Example
 
 ### Add Payment Processor Integration
 
@@ -260,7 +251,7 @@ class ReviewCompletedEvent(BaseEvent):
 @trigger(name="review-handler", filter=type_filter("order.review_completed"))
 ```
 
-## Production Considerations
+## 🏭 Production Considerations
 
 1. **Real User Data**: Integrate with user service, payment processor
 2. **ML Pre-screening**: Use fast ML model before expensive LLM calls
@@ -269,7 +260,7 @@ class ReviewCompletedEvent(BaseEvent):
 5. **Feedback Loop**: Track false positives/negatives to improve models
 6. **Compliance**: Log all decisions for regulatory requirements
 
-## Related Examples
+## 📚 Related Examples
 
 - [Content Moderation](../content_moderation/) - Similar decision flow
 - [Incident Response](../incident_response/) - Escalation patterns

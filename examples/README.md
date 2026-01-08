@@ -2,7 +2,7 @@
 
 This directory contains example applications demonstrating Reflex's capabilities.
 
-## Available Examples
+## 📚 Available Examples
 
 | Example | Description | Key Features |
 |---------|-------------|--------------|
@@ -13,13 +13,14 @@ This directory contains example applications demonstrating Reflex's capabilities
 | [Fraud Detection](./fraud_detection/) | E-commerce order fraud prevention | Scoped locking, LLM tools, event lineage |
 | [Incident Response](./incident_response/) | PagerDuty-like incident management | Full lifecycle, escalation chains, runbooks |
 
-## Quick Comparison
+## 🔍 Quick Comparison
 
 ### Basic Example
 **Best for**: Learning core concepts
 
-```
-Error Events → Threshold Filter → Alert Agent → Notifications
+```mermaid
+flowchart LR
+    A[Error Events] --> B[Threshold Filter] --> C[Alert Agent] --> D[Notifications]
 ```
 
 Features demonstrated:
@@ -31,8 +32,9 @@ Features demonstrated:
 ### Support Bot Example
 **Best for**: Real-time chat applications
 
-```
-WebSocket → Chat Events → LLM Classifier → Response/Escalation
+```mermaid
+flowchart LR
+    A[WebSocket] --> B[Chat Events] --> C[LLM Classifier] --> D[Response/Escalation]
 ```
 
 Features demonstrated:
@@ -45,8 +47,9 @@ Features demonstrated:
 ### Content Moderation Example
 **Best for**: High-volume content filtering
 
-```
-Content → Rate Limit → Dedupe → LLM Moderator → Actions
+```mermaid
+flowchart LR
+    A[Content] --> B[Rate Limit] --> C[Dedupe] --> D[LLM Moderator] --> E[Actions]
 ```
 
 Features demonstrated:
@@ -58,8 +61,9 @@ Features demonstrated:
 ### Log Anomaly Example
 **Best for**: DevOps and observability
 
-```
-Service Logs → Dedupe → Error Tracking → Threshold → LLM Root Cause
+```mermaid
+flowchart LR
+    A[Service Logs] --> B[Dedupe] --> C[Error Tracking] --> D[Threshold] --> E[LLM Root Cause]
 ```
 
 Features demonstrated:
@@ -72,8 +76,9 @@ Features demonstrated:
 ### Fraud Detection Example
 **Best for**: E-commerce and fintech
 
-```
-Order → Fraud Agent (scoped per user) → Approve/Hold/Reject
+```mermaid
+flowchart LR
+    A[Order] --> B[Fraud Agent<br/>scoped per user] --> C[Approve/Hold/Reject]
 ```
 
 Features demonstrated:
@@ -85,8 +90,9 @@ Features demonstrated:
 ### Incident Response Example
 **Best for**: SRE and operations
 
-```
-Alert → Triage → Incident → Escalation → Resolution → Postmortem
+```mermaid
+flowchart LR
+    A[Alert] --> B[Triage] --> C[Incident] --> D[Escalation] --> E[Resolution] --> F[Postmortem]
 ```
 
 Features demonstrated:
@@ -96,9 +102,9 @@ Features demonstrated:
 - Runbook matching and auto-remediation
 - Postmortem automation for high-severity incidents
 
-## Running Examples
+## 🚀 Running Examples
 
-### Prerequisites
+### 📋 Prerequisites
 
 ```bash
 # Install Reflex with dev dependencies
@@ -115,7 +121,7 @@ export ANTHROPIC_API_KEY="your-key"  # For most examples
 export OPENAI_API_KEY="your-key"     # For basic example
 ```
 
-### Run Demo Scripts
+### ▶️ Run Demo Scripts
 
 ```bash
 # Basic example
@@ -137,7 +143,7 @@ python -m examples.fraud_detection.main
 python -m examples.incident_response.main
 ```
 
-### Run Full System
+### 🌐 Run Full System
 
 ```bash
 # Start the API server (loads all examples)
@@ -152,7 +158,7 @@ curl -X POST http://localhost:8000/events \
   -d '{"type": "chat.message", "source": "ws:user123", ...}'
 ```
 
-## Creating Your Own Example
+## ✨ Creating Your Own Example
 
 1. Create a new directory: `examples/my_example/`
 2. Add `__init__.py` and `main.py`

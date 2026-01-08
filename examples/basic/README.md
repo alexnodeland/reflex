@@ -2,22 +2,22 @@
 
 A simple error monitoring system that demonstrates core Reflex concepts.
 
-## What This Example Does
+## ✨ What This Example Does
 
 1. **Custom Events**: Defines `ErrorEvent` and `AlertEvent` types
 2. **Error Threshold Trigger**: Alerts after 3 errors in 60 seconds
 3. **AI-Powered Agent**: Classifies error severity (simplified for demo)
 4. **Event Chaining**: Error events trigger alert events
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - PostgreSQL (or use Docker)
 - OpenAI API key (optional, for AI features)
 
-### Setup
+### ⚙️ Setup
 
 ```bash
 # From the repository root
@@ -36,14 +36,14 @@ alembic upgrade head
 export OPENAI_API_KEY="your-key-here"  # Optional
 ```
 
-### Run the Demo
+### ▶️ Run the Demo
 
 ```bash
 # Run the demo script
 python -m examples.basic.main
 ```
 
-### Start the Full System
+### 🌐 Start the Full System
 
 ```bash
 # Terminal 1: Start the API server
@@ -53,7 +53,7 @@ uvicorn reflex.api.app:app --reload
 docker-compose logs -f
 ```
 
-### Publish Test Events
+### 🧪 Publish Test Events
 
 ```bash
 # Publish an error event
@@ -71,7 +71,7 @@ curl -X POST http://localhost:8000/events \
 # Repeat 3 times within 60 seconds to trigger an alert
 ```
 
-## Code Structure
+## 📁 Code Structure
 
 ```
 examples/basic/
@@ -79,7 +79,7 @@ examples/basic/
 └── README.md        # This file
 ```
 
-### Key Components
+### 🧩 Key Components
 
 #### Custom Events
 
@@ -125,7 +125,7 @@ async def classify_and_alert(ctx: AgentContext) -> dict:
     return {"alert_id": alert.id}
 ```
 
-## Next Steps
+## 🎯 Next Steps
 
 - Add more event types for your domain
 - Implement custom filters for complex routing

@@ -2,7 +2,7 @@
 
 A real-time AI-powered content moderation system with rate limiting and automatic enforcement.
 
-## What This Example Demonstrates
+## ✨ What This Example Demonstrates
 
 1. **Real-time Moderation**: Messages processed instantly via WebSocket/HTTP
 2. **LLM Classification**: AI determines violation type and severity
@@ -11,28 +11,26 @@ A real-time AI-powered content moderation system with rate limiting and automati
 5. **Graduated Enforcement**: Warn → Remove → Ban based on severity
 6. **Periodic Reports**: Aggregated moderation statistics
 
-## Architecture
+## 🏗️ Architecture
 
-```
-Content → Rate Limit → Dedupe → AI Moderator
-             │            │           │
-             │            │           ▼
-             │            │    ModerationDecisionEvent
-             │            │           │
-             │            │     ┌─────┼─────┬──────┐
-             │            │     ▼     ▼     ▼      ▼
-             │            │   Approve Warn Remove  Ban
-             │            │            │     │      │
-             │            │            ▼     ▼      ▼
-             │            │      Warning  Removed  Ban
-             │            │       Event   Event   Event
-             │            │
-             ▼            ▼
-         Rejected     Rejected
-        (flood)     (duplicate)
+```mermaid
+flowchart TB
+    Content --> RateLimit[Rate Limit]
+    RateLimit --> Dedupe
+    RateLimit --> FloodReject[Rejected<br/>flood]
+    Dedupe --> AIMod[AI Moderator]
+    Dedupe --> DupeReject[Rejected<br/>duplicate]
+    AIMod --> Decision[ModerationDecisionEvent]
+    Decision --> Approve
+    Decision --> Warn
+    Decision --> Remove
+    Decision --> Ban
+    Warn --> WarningEvent[Warning Event]
+    Remove --> RemovedEvent[Removed Event]
+    Ban --> BanEvent[Ban Event]
 ```
 
-## Event Types
+## 📨 Event Types
 
 | Event | Description |
 |-------|-------------|
@@ -43,7 +41,7 @@ Content → Rate Limit → Dedupe → AI Moderator
 | `moderation.ban` | User banned |
 | `moderation.report` | Periodic summary |
 
-## Violation Types
+## 🚨 Violation Types
 
 | Type | Severity | Default Action |
 |------|----------|----------------|
@@ -57,15 +55,15 @@ Content → Rate Limit → Dedupe → AI Moderator
 | `self_harm` | 0.8-1.0 | Remove/Escalate |
 | `illegal_activity` | 0.9-1.0 | Ban/Escalate |
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - PostgreSQL (or use Docker)
 - Anthropic API key (for Claude)
 
-### Setup
+### ⚙️ Setup
 
 ```bash
 # From the repository root
@@ -84,14 +82,14 @@ alembic upgrade head
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-### Run the Demo
+### ▶️ Run the Demo
 
 ```bash
 # Run the demo script
 python -m examples.content_moderation.main
 ```
 
-### Start the Full System
+### 🌐 Start the Full System
 
 ```bash
 # Terminal 1: Start the API server
@@ -101,7 +99,7 @@ uvicorn reflex.api.app:app --reload
 # Watch the server logs
 ```
 
-### Test via HTTP
+### 🧪 Test via HTTP
 
 ```bash
 # Submit content for moderation
@@ -131,7 +129,7 @@ curl -X POST http://localhost:8000/events \
   }'
 ```
 
-## Filter Pipeline
+## 🔍 Filter Pipeline
 
 ### 1. Rate Limiting
 
@@ -170,7 +168,7 @@ content_moderator = Agent(
 - Returns structured decision with reasoning
 - Has access to user history via tools
 
-## Enforcement Logic
+## ⚖️ Enforcement Logic
 
 ### Warning Escalation
 
@@ -199,7 +197,7 @@ ban = UserBanEvent(room_id=event.room_id, ...)
 ban = UserBanEvent(room_id=None, ...)  # Platform-wide
 ```
 
-## Key Components
+## 🧩 Key Components
 
 ### Composable Filter Chain
 
@@ -236,7 +234,7 @@ async def get_user_history(ctx: RunContext[ReflexDeps], user_id: str) -> str:
 )
 ```
 
-## Extending This Example
+## 🔧 Extending This Example
 
 ### Add Appeal System
 
@@ -287,7 +285,7 @@ class UserReputation(BaseModel):
 trusted_filter = source_filter(r"trusted:.*")
 ```
 
-## Production Considerations
+## 🏭 Production Considerations
 
 1. **Persist State**: Store warnings/violations in database
 2. **Appeal Process**: Allow users to contest decisions
@@ -296,14 +294,14 @@ trusted_filter = source_filter(r"trusted:.*")
 5. **Human-in-the-Loop**: Escalate edge cases to human reviewers
 6. **Bias Monitoring**: Track decision distribution across user groups
 
-## Performance
+## ⚡ Performance
 
 - Rate limiting handled at filter level (no DB hit)
 - Deduplication uses in-memory LRU cache
 - AI calls are async and parallelized per room
 - Reports generated incrementally, not full scans
 
-## Related Examples
+## 📚 Related Examples
 
 - [Basic Example](../basic/) - Simple error monitoring
 - [Support Bot](../support_bot/) - AI-powered customer support

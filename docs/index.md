@@ -29,14 +29,14 @@ flowchart LR
     Agent -->|publish| Store
 ```
 
-## Features
+## ✨ Features
 
 - **Event-driven** - React to WebSocket, HTTP, and timer events
 - **Persistent state** - Events stored in PostgreSQL with automatic retry
 - **Observable** - Built-in tracing via Logfire
 - **Scalable** - Horizontal scaling with concurrent consumers
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/alexnodeland/reflex my-agent
@@ -53,7 +53,7 @@ Your agent is now running:
 | WebSocket | `ws://localhost:8000/ws` |
 | Health | `http://localhost:8000/health` |
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 reflex/
@@ -68,7 +68,7 @@ reflex/
 └── docs/          # Documentation
 ```
 
-## Next Steps
+## 🎯 Next Steps
 
 <div class="grid cards" markdown>
 

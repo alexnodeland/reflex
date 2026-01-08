@@ -2,7 +2,7 @@
 
 Managing Reflex in production.
 
-## Health Monitoring
+## 💓 Health Monitoring
 
 ### Basic Health Check
 
@@ -35,7 +35,7 @@ curl http://localhost:8000/health/detailed
     Use `/health` for load balancer probes (fast, simple response).
     Use `/health/detailed` for monitoring dashboards.
 
-## Dead-Letter Queue (DLQ)
+## 📬 Dead-Letter Queue (DLQ)
 
 Events that fail after max retries move to the DLQ for manual intervention.
 
@@ -66,7 +66,7 @@ python scripts/dlq.py list
     - Event payload for malformed data
     - External service availability
 
-## Event Replay
+## 🔄 Event Replay
 
 Replay historical events for debugging or reprocessing:
 
@@ -80,7 +80,7 @@ Use cases:
 - Reprocessing events after bug fixes
 - Testing new trigger configurations
 
-## Observability
+## 🔭 Observability
 
 Reflex integrates with [Logfire](https://pydantic.dev/logfire) for observability.
 
@@ -111,7 +111,7 @@ Set `LOGFIRE_TOKEN` in your environment:
 LOGFIRE_TOKEN=your-token-here
 ```
 
-## Runbook
+## 📖 Runbook
 
 ### High DLQ Count
 

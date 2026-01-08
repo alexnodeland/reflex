@@ -20,7 +20,7 @@ flowchart LR
 
 ---
 
-## Custom Event Types
+## 📨 Custom Event Types
 
 Reflex supports custom event types through the `EventRegistry`. This allows you to define domain-specific events without modifying core code.
 
@@ -82,7 +82,7 @@ class EventRequest(BaseModel):
 
 ---
 
-## Custom Agents
+## 🤖 Custom Agents
 
 Agents process events and produce responses. Reflex provides multiple ways to create agents.
 
@@ -164,7 +164,7 @@ async def get_customer_history(ctx: RunContext[ReflexDeps], customer_id: str) ->
 
 ---
 
-## Custom Filters
+## 🔍 Custom Filters
 
 Filters determine which events trigger which agents. Filters can be composed using logical operators.
 
@@ -247,7 +247,7 @@ class BurstFilter(EventFilter):
 
 ---
 
-## Custom Trigger Functions
+## ⚡ Custom Trigger Functions
 
 Trigger functions provide fine-grained control over when agents execute.
 
@@ -315,7 +315,7 @@ trigger_func = periodic_summary_trigger(event_count=100)
 
 ---
 
-## Distributed Deployments
+## 🌐 Distributed Deployments
 
 For production deployments with multiple instances.
 
@@ -373,7 +373,7 @@ Response:
 
 ---
 
-## Next Steps
+## 🎯 Next Steps
 
 - See [examples/basic/](../examples/basic/) for a complete working example
 - Check the API reference for detailed documentation
