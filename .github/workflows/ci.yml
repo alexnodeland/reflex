@@ -121,25 +121,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for docs changes
-        uses: dorny/paths-filter@v3
-        id: changes
-        with:
-          filters: |
-            docs:
-              - 'docs/**'
-              - 'mkdocs.yml'
-
       - name: Set up Python
-        if: steps.changes.outputs.docs == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
-        if: steps.changes.outputs.docs == 'true'
         run: pip install mkdocs-material mkdocs-minify-plugin
 
       - name: Build docs
-        if: steps.changes.outputs.docs == 'true'
         run: mkdocs build --strict
