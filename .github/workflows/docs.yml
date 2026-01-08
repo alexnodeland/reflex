@@ -18,17 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install uv
-        run: pip install uv
-
       - name: Install dependencies
-        run: uv pip install --system mkdocs-material mkdocs-minify-plugin
+        run: pip install mkdocs-material mkdocs-minify-plugin
 
       - name: Deploy to GitHub Pages
         run: mkdocs gh-deploy --force
