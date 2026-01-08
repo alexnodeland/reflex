@@ -1,4 +1,4 @@
-.PHONY: dev test lint type-check format clean logs shell ci docs docs-build docs-deploy
+.PHONY: dev test lint type-check format clean logs shell ci docs docs-build docs-deploy api-test api-test-health api-test-events
 
 # CI - Emulate GitHub Actions pipeline locally
 ci:
@@ -67,6 +67,16 @@ replay:
 
 dlq:
 	docker compose run --rm app python scripts/dlq.py
+
+# API Testing (Bruno)
+api-test:
+	bru run bruno --env docker
+
+api-test-health:
+	bru run bruno/health --env docker
+
+api-test-events:
+	bru run bruno/events --env docker
 
 # Documentation
 docs:

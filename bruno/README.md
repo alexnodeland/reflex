@@ -70,18 +70,17 @@ All event requests include example payloads. Modify the JSON body to test differ
 
 ## Running from CLI
 
-Bruno also supports CLI execution:
+Bruno supports CLI execution via Make targets or directly:
 
 ```bash
-# Install Bruno CLI
-npm install -g @usebruno/cli
+# Using Make (recommended)
+make api-test          # Run all requests
+make api-test-health   # Run health checks only
+make api-test-events   # Run event requests only
 
-# Run all requests
-bru run --env docker
-
-# Run specific folder
-bru run events --env docker
-
-# Run single request
-bru run health/health-check.bru --env docker
+# Using Bruno CLI directly
+npm install -g @usebruno/cli  # Install first
+bru run bruno --env docker
+bru run bruno/health --env docker
+bru run bruno/health/health-check.bru --env docker
 ```
