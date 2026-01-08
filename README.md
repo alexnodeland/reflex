@@ -6,7 +6,7 @@ Real-time AI Agent Template Project
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourorg/reflex my-agent
+git clone https://github.com/alexnodeland/reflex my-agent
 cd my-agent
 cp .env.example .env
 
@@ -30,7 +30,7 @@ Reflex is a production-ready template for building real-time AI agents as contin
 
 ## Documentation
 
-📖 **[View the full documentation](https://yourorg.github.io/reflex)**
+📖 **[View the full documentation](https://alexnodeland.github.io/reflex)**
 
 | Guide | Description |
 |-------|-------------|
