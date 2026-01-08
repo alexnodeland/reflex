@@ -26,6 +26,7 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.8",
     "pyright>=1.1.390",
+    "websockets>=14.0",
 ]
 
 [build-system]

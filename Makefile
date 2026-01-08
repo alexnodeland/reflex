@@ -59,6 +59,9 @@ migrate:
 	docker compose run --rm app python scripts/migrate.py
 
 # Utilities
+demo:
+	uv run python scripts/demo.py
+
 replay:
 	docker compose run --rm app python scripts/replay.py $(ARGS)
 
