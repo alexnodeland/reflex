@@ -1,43 +1,82 @@
-# Reflex Documentation
+# Reflex
 
-Welcome to the Reflex documentation. Reflex is a production-ready template for building real-time AI agents as continuous control systems.
+**Real-time AI Agent Framework**
 
-## Documentation
+Reflex is a production-ready template for building real-time AI agents as continuous control systems. Unlike request/response chatbots, Reflex agents run as persistent processes that react to events from multiple sources.
 
-| Document | Description |
-|----------|-------------|
-| [Getting Started](getting-started.md) | Quick start guide and setup instructions |
-| [Architecture](architecture.md) | System design, event flow, and key components |
-| [Configuration](configuration.md) | Environment variables and settings |
-| [Development](development.md) | Development commands, testing, and code quality |
-| [Extending](extending.md) | Custom events, agents, filters, and triggers |
-| [Scaling](scaling.md) | Horizontal scaling and backend options |
-| [Operations](operations.md) | DLQ management and observability |
+## Features
 
-## Key Features
+- **Event-driven** - React to WebSocket, HTTP, and timer events
+- **Persistent state** - Events stored in PostgreSQL with automatic retry
+- **Observable** - Built-in tracing via Logfire
+- **Scalable** - Horizontal scaling with concurrent consumers
 
-- **React to events** from multiple sources (WebSocket, HTTP, timers)
-- **Maintain state** across interactions with persistent event storage
-- **Observe everything** with built-in tracing via Logfire
-- **Scale horizontally** with concurrent consumer support
+## Quick Start
+
+```bash
+git clone https://github.com/yourorg/reflex my-agent
+cd my-agent
+cp .env.example .env
+docker compose up
+```
+
+Your agent is now running:
+
+| Endpoint | URL |
+|----------|-----|
+| API | `http://localhost:8000` |
+| WebSocket | `ws://localhost:8000/ws` |
+| Health | `http://localhost:8000/health` |
 
 ## Project Structure
 
 ```
 reflex/
 ├── src/reflex/
-│   ├── infra/     # Infrastructure (EventStore, database) - keep stable
-│   ├── core/      # Core types (events, deps, errors) - extend carefully
-│   ├── agent/     # Agent logic (triggers, filters) - primary extension point
-│   └── api/       # FastAPI routes and middleware
+│   ├── infra/     # Infrastructure - keep stable
+│   ├── core/      # Core types - extend carefully
+│   ├── agent/     # Agent logic - primary extension point
+│   └── api/       # FastAPI routes
 ├── tests/         # Test suite
-├── scripts/       # Utility scripts (replay, DLQ management)
+├── scripts/       # Utilities (replay, DLQ)
 ├── examples/      # Working examples
-└── docs/          # Documentation (you are here)
+└── docs/          # Documentation
 ```
 
-## Quick Links
+## Next Steps
 
-- [Examples](../examples/basic/) - Working example with custom events and triggers
-- [Contributing](../CONTRIBUTING.md) - Development guidelines
-- [License](../LICENSE) - MIT License
+<div class="grid cards" markdown>
+
+-   :material-rocket-launch:{ .lg .middle } **Getting Started**
+
+    ---
+
+    Set up your development environment and run your first agent
+
+    [:octicons-arrow-right-24: Quick start](getting-started.md)
+
+-   :material-sitemap:{ .lg .middle } **Architecture**
+
+    ---
+
+    Understand the event-driven design and key components
+
+    [:octicons-arrow-right-24: Architecture](architecture.md)
+
+-   :material-puzzle:{ .lg .middle } **Extending**
+
+    ---
+
+    Add custom events, agents, filters, and triggers
+
+    [:octicons-arrow-right-24: Extending guide](extending.md)
+
+-   :material-cog:{ .lg .middle } **Configuration**
+
+    ---
+
+    Environment variables and settings
+
+    [:octicons-arrow-right-24: Configuration](configuration.md)
+
+</div>

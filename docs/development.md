@@ -1,87 +1,132 @@
 # Development
 
-Commands and workflows for developing Reflex.
+Commands and workflows for developing with Reflex.
 
 ## Development Commands
 
-```bash
-# Start development environment with hot reload
-make dev
+=== "Docker"
 
-# Rebuild and start
-make dev-build
+    ```bash
+    make dev          # Start with hot reload
+    make dev-build    # Rebuild and start
+    make dev-down     # Stop containers
+    make logs         # Follow app logs
+    make shell        # Shell into app container
+    make db-shell     # psql into PostgreSQL
+    ```
 
-# Run interactive demo (server must be running)
-make demo
-```
+=== "Local"
+
+    ```bash
+    # Start PostgreSQL
+    docker compose up db -d
+
+    # Run the app with hot reload
+    uv run uvicorn reflex.api.app:app --reload
+
+    # Run the demo
+    make demo
+    ```
 
 ## Testing
 
 ```bash
-# Run all tests in Docker
-make test
-
-# Run all tests locally
-pytest tests/
-
-# Run a single test
-pytest tests/test_file.py::test_name
-
-# Unit tests only (no database required)
-pytest tests/ -m "not asyncio"
-
-# Integration tests (requires DATABASE_URL)
-DATABASE_URL="postgresql://..." pytest tests/test_store.py
+make test         # Run all tests in Docker
+make test-cov     # Run with coverage report
 ```
 
-### Test Organization
+### Running Tests Locally
 
-Tests are organized into unit and integration tests:
+=== "All Tests"
 
-- **Unit tests**: Run without external dependencies, use mock fixtures
-- **Integration tests**: Require `DATABASE_URL`, use real fixtures
+    ```bash
+    pytest tests/
+    ```
 
-Mock fixtures from `tests/conftest.py`:
+=== "Single Test"
+
+    ```bash
+    pytest tests/test_file.py::test_name
+    ```
+
+=== "Unit Tests Only"
+
+    ```bash
+    # No database required
+    pytest tests/ -m "not asyncio"
+    ```
+
+=== "Integration Tests"
+
+    ```bash
+    # Requires DATABASE_URL
+    DATABASE_URL="postgresql://..." pytest tests/test_store.py
+    ```
+
+### Test Fixtures
+
+Tests use mock fixtures from `tests/conftest.py`:
 
 ```python
 def test_something(mock_store, mock_deps):
-    # mock_store is AsyncMock with publish/subscribe/ack/nack
-    # mock_deps is ReflexDeps with all mocked dependencies
+    # mock_store: AsyncMock with publish/subscribe/ack/nack
+    # mock_deps: ReflexDeps with all mocked dependencies
+    pass
+```
+
+Integration tests use real fixtures:
+
+```python
+@pytest.mark.asyncio
+async def test_integration(store, real_deps):
+    # store: Real EventStore connected to PostgreSQL
+    # real_deps: ReflexDeps with real dependencies
+    pass
 ```
 
 ## Code Quality
 
 ```bash
-# Lint (ruff check)
-make lint
-
-# Auto-fix lint issues
-make lint-fix
-
-# Format code
-make format
-
-# Type check (pyright)
-make type-check
-
-# Run full CI pipeline locally
-make ci
+make lint         # ruff check
+make lint-fix     # Auto-fix lint issues
+make format       # ruff format
+make type-check   # pyright
+make ci           # Run full CI pipeline locally
 ```
 
-## Database
+### CI Pipeline
 
-```bash
-# Open psql shell
-make db-shell
+The `make ci` command runs the same checks as GitHub Actions:
 
-# Run migrations
-make migrate
-```
+1. Lint check (`ruff check`)
+2. Format check (`ruff format --check`)
+3. Type check (`pyright`)
+4. Tests (`pytest`)
 
 ## Code Style
 
-- Python 3.11+, strict pyright type checking
-- ruff for linting (includes async, security, bugbear rules)
-- Line length: 100 characters
-- Use `from __future__ import annotations` for forward references
-- Place runtime-only imports in `if TYPE_CHECKING:` blocks
+!!! note "Style Guidelines"
+
+    - Python 3.11+
+    - Strict pyright type checking
+    - ruff for linting (includes async, security, bugbear rules)
+    - Line length: 100 characters
+
+### Import Conventions
+
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Type-only imports to avoid circular dependencies
+    from reflex.core.deps import ReflexDeps
+```
+
+## Documentation
+
+```bash
+make docs         # Serve docs locally at http://localhost:8000
+make docs-build   # Build static docs site
+```

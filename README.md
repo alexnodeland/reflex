@@ -30,14 +30,16 @@ Reflex is a production-ready template for building real-time AI agents as contin
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
+📖 **[View the full documentation](https://yourorg.github.io/reflex)**
+
+| Guide | Description |
+|-------|-------------|
 | [Getting Started](docs/getting-started.md) | Setup and first steps |
 | [Architecture](docs/architecture.md) | System design and event flow |
+| [Extending](docs/extending.md) | Custom events, agents, and filters |
 | [Configuration](docs/configuration.md) | Environment variables |
 | [Development](docs/development.md) | Commands and testing |
-| [Extending](docs/extending.md) | Custom events, agents, and filters |
-| [Scaling](docs/scaling.md) | Horizontal scaling options |
+| [Scaling](docs/scaling.md) | Horizontal scaling |
 | [Operations](docs/operations.md) | DLQ and observability |
 
 ## Development
@@ -46,10 +48,8 @@ Reflex is a production-ready template for building real-time AI agents as contin
 make dev          # Start with hot reload
 make test         # Run tests
 make lint         # Check code
-make format       # Format code
+make docs         # Serve docs locally
 ```
-
-See [docs/development.md](docs/development.md) for full details.
 
 ## Contributing
 
