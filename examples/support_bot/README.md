@@ -2,7 +2,7 @@
 
 An AI-powered customer support system with real-time chat and automatic escalation.
 
-## What This Example Demonstrates
+## ✨ What This Example Demonstrates
 
 1. **WebSocket Integration**: Real-time chat via WebSocket connections
 2. **LLM Intent Classification**: AI-powered understanding of customer requests
@@ -10,29 +10,22 @@ An AI-powered customer support system with real-time chat and automatic escalati
 4. **Event Chaining**: Messages trigger responses, escalations trigger notifications
 5. **Scoped Concurrency**: Conversations processed in order per user
 
-## Architecture
+## 🏗️ Architecture
 
-```
-Customer → WebSocket → ChatMessageEvent
-                            │
-                            ▼
-                    ┌───────────────┐
-                    │ Support Bot   │
-                    │ Agent (LLM)   │
-                    └───────┬───────┘
-                            │
-              ┌─────────────┼─────────────┐
-              ▼             ▼             ▼
-        BotResponseEvent  EscalationEvent  (order lookup, etc.)
-              │             │
-              ▼             ▼
-        Response Logger   Escalation Handler
-              │             │
-              ▼             ▼
-        Send to customer  Notify human agent
+```mermaid
+flowchart TB
+    Customer --> WebSocket --> ChatMessageEvent
+    ChatMessageEvent --> Agent[Support Bot Agent<br/>LLM]
+    Agent --> BotResponse[BotResponseEvent]
+    Agent --> Escalation[EscalationEvent]
+    Agent --> Tools[Order lookup, etc.]
+    BotResponse --> ResponseLogger[Response Logger]
+    Escalation --> EscalationHandler[Escalation Handler]
+    ResponseLogger --> SendCustomer[Send to customer]
+    EscalationHandler --> NotifyHuman[Notify human agent]
 ```
 
-## Event Types
+## 📨 Event Types
 
 | Event | Description |
 |-------|-------------|
@@ -42,15 +35,15 @@ Customer → WebSocket → ChatMessageEvent
 | `support.escalation_timeout` | Escalation not acknowledged |
 | `support.resolved` | Conversation completed |
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - PostgreSQL (or use Docker)
 - Anthropic API key (for Claude)
 
-### Setup
+### ⚙️ Setup
 
 ```bash
 # From the repository root
@@ -69,14 +62,14 @@ alembic upgrade head
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-### Run the Demo
+### ▶️ Run the Demo
 
 ```bash
 # Run the demo script
 python -m examples.support_bot.main
 ```
 
-### Start the Full System
+### 🌐 Start the Full System
 
 ```bash
 # Terminal 1: Start the API server
@@ -87,7 +80,7 @@ websocat ws://localhost:8000/ws/customer123
 # Then type: {"content": "Hello, I need help!"}
 ```
 
-### Test via HTTP
+### 🧪 Test via HTTP
 
 ```bash
 # Simulate a chat message
@@ -102,7 +95,7 @@ curl -X POST http://localhost:8000/events \
   }'
 ```
 
-## Intent Classification
+## 🎯 Intent Classification
 
 The LLM classifies messages into these intents:
 
@@ -117,7 +110,7 @@ The LLM classifies messages into these intents:
 | `escalation_request` | Immediately connect to human |
 | `unknown` | Low confidence → escalate |
 
-## Escalation Logic
+## ⬆️ Escalation Logic
 
 Escalation occurs when:
 - Customer explicitly requests human agent
@@ -131,7 +124,7 @@ Escalation priorities:
 - **medium**: Complex technical issues
 - **low**: Clarification needed
 
-## Key Components
+## 🧩 Key Components
 
 ### LLM Agent with Tools
 
@@ -174,7 +167,7 @@ response = ctx.derive_event(
 await ctx.publish(response)
 ```
 
-## Extending This Example
+## 🔧 Extending This Example
 
 ### Add Human Agent Interface
 
@@ -205,7 +198,7 @@ TEMPLATES = {
 }
 ```
 
-## Production Considerations
+## 🏭 Production Considerations
 
 1. **Persist Conversations**: Store conversation history in database
 2. **Human Agent Queue**: Integrate with agent assignment system
@@ -213,7 +206,7 @@ TEMPLATES = {
 4. **Analytics**: Track intent distribution, resolution rates
 5. **Fallback Handling**: Graceful degradation when LLM unavailable
 
-## Related Examples
+## 📚 Related Examples
 
 - [Basic Example](../basic/) - Simple error monitoring
 - [Content Moderation](../content_moderation/) - Real-time message filtering

@@ -2,7 +2,7 @@
 
 A PagerDuty-like incident management system with AI-powered triage and automated escalation.
 
-## What This Example Demonstrates
+## ✨ What This Example Demonstrates
 
 1. **Full Incident Lifecycle**: Alert → Incident → Escalation → Resolution → Postmortem
 2. **AI-Powered Triage**: LLM determines severity, category, and runbook
@@ -11,43 +11,25 @@ A PagerDuty-like incident management system with AI-powered triage and automated
 5. **Runbook Integration**: Suggests and optionally auto-executes remediation
 6. **Postmortem Automation**: Triggers postmortem for high-severity incidents
 
-## Architecture
+## 🏗️ Architecture
 
-```
-Monitoring Alert → AlertEvent
-                      │
-                      ▼
-                  Deduplication (5min)
-                      │
-                      ▼
-              ┌───────────────┐
-              │ Triage Agent  │
-              │ (LLM)         │
-              └───────┬───────┘
-                      │
-         ┌────────────┴────────────┐
-         ▼                         ▼
- IncidentCreatedEvent      RunbookSuggestedEvent
-         │                         │
-         ▼                         ▼
- EscalationEvent              Auto-execute?
-         │                    (if confidence > 80%)
-         ▼
- NotificationEvent
- (Slack, SMS, Phone)
-         │
-         ▼
- AcknowledgmentEvent ←── On-call responds
-         │
-         ▼
- IncidentResolvedEvent
-         │
-         ▼
- PostmortemRequestedEvent
- (SEV1/SEV2 only)
+```mermaid
+flowchart TB
+    MonitoringAlert[Monitoring Alert] --> AlertEvent
+    AlertEvent --> Dedupe[Deduplication<br/>5min window]
+    Dedupe --> TriageAgent[Triage Agent<br/>LLM]
+    TriageAgent --> IncidentCreated[IncidentCreatedEvent]
+    TriageAgent --> RunbookSuggested[RunbookSuggestedEvent]
+    IncidentCreated --> EscalationEvent
+    RunbookSuggested --> AutoExecute{Auto-execute?<br/>confidence > 80%}
+    EscalationEvent --> NotificationEvent[NotificationEvent<br/>Slack, SMS, Phone]
+    NotificationEvent --> AckEvent[AcknowledgmentEvent]
+    OnCall[On-call responds] --> AckEvent
+    AckEvent --> ResolvedEvent[IncidentResolvedEvent]
+    ResolvedEvent --> PostmortemEvent[PostmortemRequestedEvent<br/>SEV1/SEV2 only]
 ```
 
-## Event Types
+## 📨 Event Types
 
 | Event | Description |
 |-------|-------------|
@@ -60,7 +42,7 @@ Monitoring Alert → AlertEvent
 | `incident.resolved` | Incident closed |
 | `incident.postmortem_requested` | Postmortem triggered |
 
-## Severity Levels
+## 🚨 Severity Levels
 
 | Level | Description | Response |
 |-------|-------------|----------|
@@ -69,10 +51,11 @@ Monitoring Alert → AlertEvent
 | SEV3 | Limited impact | Business hours |
 | SEV4 | Minor issue | Best effort |
 
-## Escalation Chain
+## ⬆️ Escalation Chain
 
-```
-PRIMARY (5 min) → SECONDARY (10 min) → MANAGER (15 min) → EXECUTIVE
+```mermaid
+flowchart LR
+    Primary[PRIMARY<br/>5 min] --> Secondary[SECONDARY<br/>10 min] --> Manager[MANAGER<br/>15 min] --> Executive[EXECUTIVE]
 ```
 
 | Level | Who | Channels |
@@ -82,15 +65,15 @@ PRIMARY (5 min) → SECONDARY (10 min) → MANAGER (15 min) → EXECUTIVE
 | Manager | Engineering manager | Slack, Phone |
 | Executive | VP Engineering | Phone |
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - PostgreSQL (or use Docker)
 - Anthropic API key (for Claude)
 
-### Setup
+### ⚙️ Setup
 
 ```bash
 # From the repository root
@@ -109,21 +92,21 @@ alembic upgrade head
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-### Run the Demo
+### ▶️ Run the Demo
 
 ```bash
 # Run the demo script
 python -m examples.incident_response.main
 ```
 
-### Start the Full System
+### 🌐 Start the Full System
 
 ```bash
 # Terminal 1: Start the API server
 uvicorn reflex.api.app:app --reload
 ```
 
-### Test Alerts
+### 🧪 Test Alerts
 
 ```bash
 # Critical database alert
@@ -179,7 +162,7 @@ curl -X POST http://localhost:8000/events \
   }'
 ```
 
-## Key Components
+## 🧩 Key Components
 
 ### Alert Deduplication
 
@@ -248,7 +231,7 @@ if severity in (Severity.SEV1, Severity.SEV2):
     await ctx.publish(postmortem)
 ```
 
-## Extending This Example
+## 🔧 Extending This Example
 
 ### Add Escalation Timeouts
 
@@ -305,7 +288,7 @@ class RemediationExecutedEvent(BaseEvent):
 # Execute the runbook steps automatically
 ```
 
-## Production Considerations
+## 🏭 Production Considerations
 
 1. **PagerDuty/OpsGenie Integration**: Real notification routing
 2. **Slack/Teams Integration**: Rich incident updates
@@ -314,7 +297,7 @@ class RemediationExecutedEvent(BaseEvent):
 5. **SLA Tracking**: Measure TTR, MTTA by severity
 6. **On-Call Management**: Integrate with scheduling system
 
-## Metrics to Track
+## 📊 Metrics to Track
 
 | Metric | Description |
 |--------|-------------|
@@ -324,7 +307,7 @@ class RemediationExecutedEvent(BaseEvent):
 | Escalation Rate | % that escalate beyond primary |
 | Auto-Resolution Rate | % resolved by runbooks |
 
-## Related Examples
+## 📚 Related Examples
 
 - [Log Anomaly Detection](../log_anomaly/) - Alert source
 - [Support Bot](../support_bot/) - Similar escalation patterns

@@ -2,7 +2,7 @@
 
 A multi-service log aggregation and anomaly detection system with AI-powered root cause analysis.
 
-## What This Example Demonstrates
+## ✨ What This Example Demonstrates
 
 1. **Log Aggregation**: Collect logs from multiple services
 2. **Deduplication**: Filter out duplicate log entries
@@ -10,39 +10,24 @@ A multi-service log aggregation and anomaly detection system with AI-powered roo
 4. **LLM Correlation**: AI analyzes patterns across services
 5. **Root Cause Analysis**: Automatic diagnosis and recommendations
 
-## Architecture
+## 🏗️ Architecture
 
-```
-Services emit logs → LogEvent
-                        │
-                        ▼
-                   Deduplication (5s)
-                        │
-              ┌─────────┴─────────┐
-              │                   │
-         Info/Warn              Error
-              │                   │
-              ▼                   ▼
-         Log Summary        ErrorLogEvent
-         (periodic)              │
-                                 ▼
-                         Threshold Trigger
-                         (5 errors/60s)
-                                 │
-                                 ▼
-                       AnomalyDetectedEvent
-                                 │
-                                 ▼
-                       LLM Root Cause Analysis
-                                 │
-                                 ▼
-                     RootCauseAnalysisEvent
-                                 │
-                                 ▼
-                           Alert Handler
+```mermaid
+flowchart TB
+    Services[Services emit logs] --> LogEvent
+    LogEvent --> Dedupe[Deduplication<br/>5s window]
+    Dedupe --> InfoWarn[Info/Warn]
+    Dedupe --> Error[Error]
+    InfoWarn --> LogSummary[Log Summary<br/>periodic]
+    Error --> ErrorLogEvent
+    ErrorLogEvent --> Threshold[Threshold Trigger<br/>5 errors/60s]
+    Threshold --> AnomalyDetected[AnomalyDetectedEvent]
+    AnomalyDetected --> LLMAnalysis[LLM Root Cause Analysis]
+    LLMAnalysis --> RootCause[RootCauseAnalysisEvent]
+    RootCause --> AlertHandler[Alert Handler]
 ```
 
-## Event Types
+## 📨 Event Types
 
 | Event | Description |
 |-------|-------------|
@@ -52,7 +37,7 @@ Services emit logs → LogEvent
 | `log.root_cause` | AI analysis result |
 | `log.summary` | Periodic aggregation |
 
-## Anomaly Types
+## 🚨 Anomaly Types
 
 | Type | Description |
 |------|-------------|
@@ -62,15 +47,15 @@ Services emit logs → LogEvent
 | `connection_failure` | Database/service connection issues |
 | `cascade_failure` | Errors spreading across services |
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - PostgreSQL (or use Docker)
 - Anthropic API key (for Claude)
 
-### Setup
+### ⚙️ Setup
 
 ```bash
 # From the repository root
@@ -89,21 +74,21 @@ alembic upgrade head
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-### Run the Demo
+### ▶️ Run the Demo
 
 ```bash
 # Run the demo script
 python -m examples.log_anomaly.main
 ```
 
-### Start the Full System
+### 🌐 Start the Full System
 
 ```bash
 # Terminal 1: Start the API server
 uvicorn reflex.api.app:app --reload
 ```
 
-### Send Test Logs
+### 🧪 Send Test Logs
 
 ```bash
 # Normal info log
@@ -134,7 +119,7 @@ curl -X POST http://localhost:8000/events \
 # Send 5+ errors within 60 seconds to trigger anomaly detection
 ```
 
-## Key Components
+## 🧩 Key Components
 
 ### Log Deduplication
 
@@ -190,7 +175,7 @@ filter=type_filter("log.entry") & source_filter(r".*-prod.*")
 
 Only process logs from production services (source contains "-prod").
 
-## Event Flow Example
+## 🔄 Event Flow Example
 
 ```
 1. api-gateway-prod: ERROR - Upstream timeout
@@ -205,7 +190,7 @@ Only process logs from production services (source contains "-prod").
                    └─→ Alert: "Scale DB, enable connection pooling"
 ```
 
-## Extending This Example
+## 🔧 Extending This Example
 
 ### Add Service Dependencies
 
@@ -247,7 +232,7 @@ async def get_runbook(ctx: RunContext[ReflexDeps], issue_type: str) -> str:
     return runbooks.get(issue_type, "No runbook found. Escalate to on-call.")
 ```
 
-## Production Considerations
+## 🏭 Production Considerations
 
 1. **Log Shipping**: Use Fluentd, Filebeat, or Vector to send logs
 2. **Sampling**: For high-volume services, sample logs at source
@@ -255,7 +240,7 @@ async def get_runbook(ctx: RunContext[ReflexDeps], issue_type: str) -> str:
 4. **Dashboards**: Export summaries to Grafana/Datadog
 5. **On-Call Integration**: Send alerts to PagerDuty/OpsGenie
 
-## Related Examples
+## 📚 Related Examples
 
 - [Basic Example](../basic/) - Simple error monitoring
 - [Incident Response](../incident_response/) - Full incident lifecycle
