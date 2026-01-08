@@ -178,7 +178,7 @@ class EventStore:
                 async with self.session_factory() as session:
                     # Use parameterized query with PostgreSQL ANY() for type filtering
                     # This avoids SQL injection by never interpolating user input
-                    # Note: Use CAST() instead of :: to avoid conflicts with SQLAlchemy parameter syntax
+                    # Note: Use CAST() instead of :: to avoid SQLAlchemy param conflicts
                     query = text("""
                         UPDATE events
                         SET status = 'processing', attempts = attempts + 1
@@ -186,7 +186,8 @@ class EventStore:
                             SELECT id FROM events
                             WHERE status = 'pending'
                                 AND (next_retry_at IS NULL OR next_retry_at <= NOW())
-                                AND (CAST(:event_types AS text[]) IS NULL OR type = ANY(:event_types))
+                                AND (CAST(:event_types AS text[]) IS NULL
+                                     OR type = ANY(:event_types))
                             ORDER BY timestamp
                             LIMIT :batch_size
                             FOR UPDATE SKIP LOCKED
