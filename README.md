@@ -1,5 +1,11 @@
 # Reflex
 
+[![CI](https://github.com/alexnodeland/reflex/actions/workflows/ci.yml/badge.svg)](https://github.com/alexnodeland/reflex/actions/workflows/ci.yml)
+[![Docs](https://github.com/alexnodeland/reflex/actions/workflows/docs.yml/badge.svg)](https://alexnodeland.github.io/reflex)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 Real-time AI Agent Template Project
 
 ## Quick Start
